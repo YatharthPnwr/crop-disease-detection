@@ -1,0 +1,12 @@
+{
+  "custom_cnn": {
+    "run_id": "custom_s0",
+    "val_macro_f1": 0.99683,
+    "unsure_threshold": 0.8089
+  },
+  "efficientnet_b0": {
+    "run_id": "effb0_s2",
+    "val_macro_f1": 0.99684,
+    "unsure_threshold": 0.8018
+  }
+}

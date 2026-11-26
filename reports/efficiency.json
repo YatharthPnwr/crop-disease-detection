@@ -1,0 +1,20 @@
+[
+  {
+    "model": "Custom CNN",
+    "params_M": 2.36,
+    "gmacs": 2.83,
+    "pt_MB": 9.5,
+    "torch_ms": 24.2,
+    "onnx_MB": 9.5,
+    "onnx_ms": 13.6
+  },
+  {
+    "model": "EfficientNet-B0",
+    "params_M": 4.06,
+    "gmacs": 0.4,
+    "pt_MB": 16.5,
+    "torch_ms": 15.1,
+    "onnx_MB": 16.2,
+    "onnx_ms": 4.4
+  }
+]

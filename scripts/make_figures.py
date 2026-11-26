@@ -88,7 +88,7 @@ def main() -> None:
         lo = min(min(v["f1"] for v in pc.values()) for pc in per_class.values()) * 100
         ax.set_xlim(max(0, lo - 5), 100.5)
         ax.set_xlabel("Test F1 (%)")
-        ax.set_title("Per-class test F1")
+        ax.set_title("Per-class test F1 (seed 0 of each model)")
         ax.legend(loc="lower left", fontsize=8)
         ax.grid(axis="x", alpha=0.3)
         fig.tight_layout()
