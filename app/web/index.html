@@ -44,7 +44,7 @@
     <!-- ======================================================= HERO + TOOL -->
     <section class="hero container" id="diagnose" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">PlantVillage · 38 classes · 14 crops</p>
+        <p class="eyebrow">PlantVillage + PlantDoc · 38 classes · 14 crops</p>
         <h1 id="hero-title">Read a leaf.<br><em>See why.</em></h1>
         <p class="lead">Photograph one leaf. A convolutional network names the disease, and a Grad-CAM heatmap shows which part of the leaf drove the answer.</p>
         <ul class="proof" id="proof" aria-label="Headline results">
@@ -161,7 +161,7 @@
         <div class="section-head">
           <p class="eyebrow">Model report</p>
           <h2 id="report-title">How well it works</h2>
-          <p class="lead small">Measured on <span id="r-test-n">—</span> held-out PlantVillage leaves. Every number is the mean of 3 training runs with different seeds.</p>
+          <p class="lead small">Two test sets the models never trained on: <span id="r-test-n">—</span> PlantVillage lab photos and <span id="r-field-n">—</span> PlantDoc field photos. Every number is the mean of 3 training runs with different seeds.</p>
         </div>
 
         <div class="report-error card" id="report-error" hidden role="alert">
@@ -174,16 +174,33 @@
           <div class="kpi card skeleton"></div><div class="kpi card skeleton"></div>
         </div>
 
+        <div class="card chart-card">
+          <div class="chart-head">
+            <h3>Lab photos vs field photos</h3>
+            <ul class="legend" aria-label="Legend">
+              <li><i class="ring" aria-hidden="true"></i>Trained on PlantVillage only</li>
+              <li><i class="dot dot-ink" aria-hidden="true"></i>+ PlantDoc field photos</li>
+            </ul>
+          </div>
+          <p class="chart-sub" id="gap-sub">Test accuracy. Lab-only training looks perfect in the lab and fails in the field; adding field photos closes part of that gap.</p>
+          <div class="chart" id="chart-gap" role="img" aria-label="Dot plot of lab and field test accuracy before and after adding PlantDoc, for both models"></div>
+          <details class="table-view"><summary>View as table</summary><div id="table-gap"></div></details>
+        </div>
+
         <div class="grid-2">
           <div class="card chart-card">
             <div class="chart-head">
               <h3>Validation macro-F1 by epoch</h3>
-              <ul class="legend" aria-label="Legend">
-                <li><i class="sw sw-custom"></i>Custom CNN</li>
-                <li><i class="sw sw-effb0"></i>EfficientNet-B0</li>
-              </ul>
+              <div class="segmented small" role="radiogroup" aria-label="Validation set for the curves">
+                <label><input type="radio" name="dom-curves" value="field" checked><span>Field</span></label>
+                <label><input type="radio" name="dom-curves" value="lab"><span>Lab</span></label>
+              </div>
             </div>
-            <p class="chart-sub">Three seeds per model. EfficientNet-B0 starts from ImageNet weights, so it is already strong after its two head-only epochs.</p>
+            <ul class="legend" aria-label="Legend">
+              <li><i class="sw sw-custom"></i>Custom CNN</li>
+              <li><i class="sw sw-effb0"></i>EfficientNet-B0</li>
+            </ul>
+            <p class="chart-sub">Three seeds per model, trained on lab + field photos. EfficientNet-B0 starts from ImageNet weights, so it is strong after its two head-only epochs.</p>
             <div class="chart" id="chart-curves" role="img" aria-label="Line chart of validation macro-F1 per epoch for both models"></div>
             <details class="table-view"><summary>View as table</summary><div id="table-curves"></div></details>
           </div>
@@ -203,15 +220,19 @@
         <div class="card chart-card">
           <div class="chart-head">
             <h3>Per-class test F1, hardest classes first</h3>
+            <div class="segmented small" role="radiogroup" aria-label="Test set for per-class F1">
+              <label><input type="radio" name="dom-classes" value="field" checked><span>Field</span></label>
+              <label><input type="radio" name="dom-classes" value="lab"><span>Lab</span></label>
+            </div>
             <ul class="legend" aria-label="Legend">
               <li><i class="dot dot-custom"></i>Custom CNN</li>
               <li><i class="dot dot-effb0"></i>EfficientNet-B0</li>
             </ul>
           </div>
-          <p class="chart-sub">Most classes sit at or near 100%. The two corn leaf-spot diseases, which look alike, are the hardest.</p>
+          <p class="chart-sub" id="classes-sub"></p>
           <div class="chart" id="chart-classes" role="img" aria-label="Dot plot of per-class test F1 for both models"></div>
           <div class="chart-foot">
-            <button class="btn btn-ghost small" type="button" id="classes-toggle" aria-expanded="false">Show all 38 classes</button>
+            <button class="btn btn-ghost small" type="button" id="classes-toggle" aria-expanded="false">Show all classes</button>
             <details class="table-view"><summary>View as table</summary><div id="table-classes"></div></details>
           </div>
         </div>
@@ -222,20 +243,24 @@
             <p class="chart-sub">Grad-CAM on 500 test leaves, scored against leaf masks from PlantVillage's segmented images. The leaf covers <span id="x-leaf">—</span> of each image, which is the chance level.</p>
             <div class="xstats" id="xstats"></div>
             <figure class="figure">
-              <img src="/figures/cam_effb0_s2_wrong.png" alt="Grad-CAM and Grad-CAM++ heatmaps for eight test leaves EfficientNet-B0 got wrong; most are corn leaf-spot diseases confused with each other" loading="lazy" width="2520" height="1035">
-              <figcaption>EfficientNet-B0's mistakes: most are corn gray leaf spot vs northern leaf blight.</figcaption>
+              <img src="/figures/cam_effb0_field_s1_wrong.png" alt="Grad-CAM and Grad-CAM++ heatmaps for eight lab test leaves that EfficientNet-B0 classified wrongly" loading="lazy" width="2520" height="1035">
+              <figcaption>EfficientNet-B0 (lab + field) on lab test leaves it got wrong, with both heatmap methods.</figcaption>
             </figure>
           </div>
 
           <div class="stack">
             <div class="card">
               <h3>Most confused pairs</h3>
-              <p class="chart-sub">EfficientNet-B0 on the test set: <span id="c-errors">—</span>.</p>
+              <p class="chart-sub">EfficientNet-B0's most frequent mistakes on each test set.</p>
+              <h4 class="mini-title conf-h">Field photos</h4>
+              <ol class="confusions" id="confusions-field"></ol>
+              <h4 class="mini-title conf-h">Lab photos</h4>
               <ol class="confusions" id="confusions"></ol>
             </div>
             <div class="card">
               <h3>The data</h3>
               <div class="data-nums" id="data-nums"></div>
+              <div class="data-nums" id="data-nums-field"></div>
               <div class="splitbar" id="splitbar" aria-hidden="true"></div>
               <ul class="split-legend" id="split-legend"></ul>
               <p class="foot" id="leak-note"></p>
@@ -249,12 +274,12 @@
     <section class="container method" id="method" aria-labelledby="method-title">
       <div class="section-head">
         <p class="eyebrow">How it works</p>
-        <h2 id="method-title">From 54,305 lab photos to a heatmap</h2>
+        <h2 id="method-title">From lab photos and field photos to a heatmap</h2>
       </div>
       <ol class="steps">
         <li class="card"><span class="step-n">01</span><h3>Group near-duplicates</h3><p>PlantVillage has several photos of the same leaf. A perceptual hash links them, and the split keeps each group on one side, so test leaves are truly unseen.</p></li>
-        <li class="card"><span class="step-n">02</span><h3>Train two CNNs</h3><p>A 2.4M-parameter CNN built from scratch, and EfficientNet-B0 fine-tuned from ImageNet in two phases: head first, then the whole network at a 10x lower learning rate.</p></li>
-        <li class="card"><span class="step-n">03</span><h3>Run on Modal GPUs</h3><p>Six runs (two models, three seeds) train in parallel on A10G GPUs with bf16, label smoothing, AdamW, warmup and cosine decay.</p></li>
+        <li class="card"><span class="step-n">02</span><h3>Add field photos</h3><p>Lab-only models scored under a third on real field leaves. We crop 8,688 single leaves from PlantDoc field photos, oversample them, and paste lab leaves onto blurred field backgrounds.</p></li>
+        <li class="card"><span class="step-n">03</span><h3>Train two CNNs on Modal</h3><p>A 2.4M-parameter CNN from scratch and EfficientNet-B0 fine-tuned from ImageNet (head first, then everything at a 10x lower rate), three seeds each, in parallel on A10G GPUs.</p></li>
         <li class="card"><span class="step-n">04</span><h3>Explain and check</h3><p>Grad-CAM shows the evidence. A confidence threshold set on validation data turns shaky predictions into "please retake".</p></li>
       </ol>
     </section>
@@ -263,8 +288,8 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div>
-        <p><strong>Limits.</strong> Trained only on lab photos of single leaves on plain backgrounds; field photos will be less accurate. Knows 38 classes across 14 crops. Disease notes are an unverified draft: check with an agricultural extension officer before treating plants.</p>
-        <p class="foot">PlantVillage images: Hughes &amp; Salathé, via Kaggle, CC BY-NC-SA 4.0. Photos you upload stay in memory and are never saved.</p>
+        <p><strong>Limits.</strong> Field accuracy is far below lab accuracy (see the model report), and 11 of the 38 classes have no field training photos at all. Knows only 14 crops. Disease notes are an unverified draft: check with an agricultural extension officer before treating plants.</p>
+        <p class="foot">PlantVillage: Hughes &amp; Salathé, via Kaggle, CC BY-NC-SA 4.0. PlantDoc: Singh et al. 2020, CC BY 4.0. Photos you upload stay in memory and are never saved.</p>
       </div>
     </div>
   </footer>

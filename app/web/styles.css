@@ -283,6 +283,14 @@ input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--primary); h
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .dot-custom { background: var(--series-custom); }
 .dot-effb0 { background: var(--series-effb0); }
+.dot-ink { background: var(--ink-2); }
+.ring { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink-2); }
+.chart .hollow { fill: var(--surface); stroke-width: 2; }
+.chart .arrow { stroke-width: 2; stroke-linecap: round; fill: none; }
+.chart .val-lbl { font: 500 11px var(--font-mono); fill: var(--ink); }
+.chart .grp-lbl { font: 600 12px var(--font-sans); fill: var(--ink); }
+.conf-h { margin-top: var(--s-4); }
+.chart-head .segmented { margin-left: auto; }
 .chart { position: relative; width: 100%; }
 .chart svg { display: block; width: 100%; overflow: visible; }
 .chart .grid line { stroke: var(--line); stroke-width: 1; }

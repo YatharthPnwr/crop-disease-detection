@@ -19,6 +19,9 @@ for line in sys.stdin:
         print(
             f"{m.group(1):<22} {r['phase']:<4} ep {r['epoch'] + 1:>2}  "
             f"train_acc {r['train_acc'] * 100:5.1f}  val_acc {r['val_acc'] * 100:6.2f}  "
-            f"val_F1 {r['val_macro_f1'] * 100:6.2f}  {r['seconds']:.0f}s",
+            f"val_F1 {r['val_macro_f1'] * 100:6.2f}"
+            + (f"  lab_F1 {r['val_f1_plantvillage'] * 100:6.2f}  field_F1 {r['val_f1_plantdoc'] * 100:6.2f}"
+               if "val_f1_plantdoc" in r else "")
+            + f"  {r['seconds']:.0f}s",
             flush=True,
         )
