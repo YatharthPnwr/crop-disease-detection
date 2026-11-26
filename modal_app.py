@@ -344,8 +344,13 @@ def collect():
         d.mkdir(parents=True, exist_ok=True)
         for name, blob in files.items():
             (d / name).write_bytes(blob)
-    (ROOT / "app" / "models").mkdir(parents=True, exist_ok=True)
+    models_dir = ROOT / "app" / "models"
+    models_dir.mkdir(parents=True, exist_ok=True)
+    chosen = {}
     for model, (f1, run_id) in best.items():
-        src = ROOT / "runs" / run_id / "best.pt"
-        (ROOT / "app" / "models" / f"{model}.pt").write_bytes(src.read_bytes())
+        src = ROOT / "runs" / run_id
+        (models_dir / f"{model}.pt").write_bytes((src / "best.pt").read_bytes())
+        m = json.loads((src / "metrics.json").read_text())
+        chosen[model] = {"run_id": run_id, "val_macro_f1": f1, "unsure_threshold": m.get("unsure_threshold", 0.5)}
         print(f"{model}: {run_id} (val macro-F1 {f1:.4f}) -> app/models/{model}.pt")
+    (models_dir / "models.json").write_text(json.dumps(chosen, indent=2))

@@ -212,6 +212,13 @@ def run(
     yt, pt, _, test_loss = predict(model, loaders["test"], device, precision, criterion)
     tm = classification_metrics(yt, pt, classes)
     np.save(out / "confusion.npy", confusion(yt, pt, len(classes)))
+
+    # App "unsure" threshold from validation (never test): the top-1 confidence that
+    # 95% of correct validation predictions exceed.
+    yv, pv, val_probs, _ = predict(model, loaders["val"], device, precision, criterion)
+    np.savez_compressed(out / "val_probs.npz", y=yv, probs=val_probs.astype(np.float16))
+    conf_correct = val_probs.max(1)[yv == pv]
+    unsure_threshold = float(np.percentile(conf_correct, 5)) if len(conf_correct) else 0.5
     save_json(classes, out / "classes.json")
     save_json(tm["per_class"], out / "test_per_class.json")
 
@@ -227,6 +234,7 @@ def run(
         "device": torch.cuda.get_device_name(0) if device.type == "cuda" else "cpu",
         "best_epoch": best["val"],
         "test": {k: v for k, v in tm.items() if k != "per_class"} | {"loss": test_loss},
+        "unsure_threshold": round(unsure_threshold, 4),
         "epochs_run": len(history),
         "mean_epoch_seconds": round(float(np.mean(epoch_secs)), 1) if epoch_secs else None,
         "train_minutes": round((time.time() - t_start) / 60, 2),
