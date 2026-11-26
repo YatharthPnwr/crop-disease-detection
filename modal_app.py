@@ -7,6 +7,7 @@ The laptop only orchestrates; every heavy step runs in a Modal container.
     modal run modal_app.py::smoke           # 1 epoch on 5% of the data, both models: timing + sanity
     modal run --detach modal_app.py::grid   # custom CNN x3 seeds, EfficientNet-B0 x3 seeds (+ leakage run)
     modal run modal_app.py::collect         # metrics -> runs/, best weights -> app/models/
+    modal run modal_app.py::explain         # Grad-CAM leaf-vs-background analysis + CAM grids
 """
 
 from __future__ import annotations
@@ -185,6 +186,51 @@ def run_grid(jobs: list[dict]) -> list[dict]:
     return out
 
 
+@app.function(image=train_image, gpu="A10G", cpu=8, memory=32768, timeout=3600,
+              volumes={DATA: data_vol, RUNS: runs_vol})
+def explain_runs(run_ids: list[str], n: int = 500, seed: int = 0) -> dict:
+    """Leaf-vs-background analysis + CAM grids (8 correct, 8 wrong test images) per run."""
+    import numpy as np
+    import torch
+    from torch.utils.data import DataLoader
+
+    from cropdoc.data import LeafDataset, eval_transform, read_split_csv, split_rows
+    from cropdoc.evaluate import predict
+    from cropdoc.explain import analyze, cam_grid_png
+    from cropdoc.models import DISPLAY_NAMES, build_model
+
+    runs_vol.reload()
+    color = ensure_local("color")
+    seg = ensure_local("segmented") if Path(f"{DATA}/pv_segmented.tar").exists() else None
+    test = split_rows(read_split_csv(f"{DATA}/pv_split.csv"), "test")
+    device = torch.device("cuda")
+    rng = np.random.default_rng(seed)
+    out = {}
+    for rid in run_ids:
+        ck = torch.load(f"{RUNS}/{rid}/best.pt", map_location="cpu", weights_only=False)
+        classes = ck["classes"]
+        model = build_model(ck["cfg"]["model"], len(classes), ck["cfg"]["dropout"], pretrained=False)
+        model.load_state_dict(ck["model"])
+        model = model.to(device).eval()
+        res = analyze(model, color, seg, test, classes, device, n=n, seed=seed)
+
+        # full test pass to find enough correct and wrong examples for the grids
+        loader = DataLoader(LeafDataset(color, test, classes, eval_transform()), batch_size=256, num_workers=8)
+        y, p, _, _ = predict(model, loader, device, "fp32")
+        cls_index = {c: i for i, c in enumerate(classes)}
+        items = [{"path": r["path"], "label": cls_index[r["label"]], "pred": int(pi)} for r, pi in zip(test, p)]
+        right = [items[i] for i in rng.permutation(np.flatnonzero(y == p))[:8]]
+        wrong = [items[i] for i in rng.permutation(np.flatnonzero(y != p))[:8]]
+        name = DISPLAY_NAMES[ck["cfg"]["model"]]
+        out[rid] = {
+            "summary": res["summary"] | {"test_errors": int((y != p).sum()), "test_images": int(len(y))},
+            "per_image": res["per_image"],
+            "correct.png": cam_grid_png(model, color, right, classes, device, f"{name}: correct predictions"),
+            "wrong.png": cam_grid_png(model, color, wrong, classes, device, f"{name}: wrong predictions") if wrong else None,
+        }
+    return out
+
+
 @app.function(image=train_image, volumes={RUNS: runs_vol}, timeout=1800)
 def collect_runs(weights_for: list[str]) -> dict:
     runs_vol.reload()
@@ -263,6 +309,21 @@ def grid(seeds: str = "0,1,2", leakage: bool = True):
     print(f"launching {len(jobs)} runs: {[j['run_id'] for j in jobs]}")
     for r in run_grid.remote(jobs):
         print(r["run_id"], "ok" if r["ok"] else "FAILED", r["result"] if not r["ok"] else r["result"]["test"])
+
+
+@app.local_entrypoint()
+def explain(runs: str = "custom_s0,effb0_s0", n: int = 500):
+    """Grad-CAM analysis -> reports/explain_<run>.json and reports/figures/cam_<run>_*.png."""
+    res = explain_runs.remote([r for r in runs.split(",") if r], n)
+    figs = ROOT / "reports" / "figures"
+    figs.mkdir(parents=True, exist_ok=True)
+    for rid, r in res.items():
+        (ROOT / "reports" / f"explain_{rid}.json").write_text(
+            json.dumps({"summary": r["summary"], "per_image": r["per_image"]}, indent=2))
+        for kind in ("correct", "wrong"):
+            if r[f"{kind}.png"]:
+                (figs / f"cam_{rid}_{kind}.png").write_bytes(r[f"{kind}.png"])
+        print(rid, json.dumps(r["summary"], indent=2))
 
 
 @app.local_entrypoint()
