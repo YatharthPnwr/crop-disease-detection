@@ -334,6 +334,39 @@ def inspect_pairs(dist: int = 4, n: int = 15, seed: int = 0):
     print(f"wrote {out}")
 
 
+@app.function(image=train_image, volumes={DATA: data_vol}, cpu=2, timeout=900)
+def read_images(paths: list[str]) -> dict[str, bytes]:
+    root = Path(ensure_local("color"))
+    return {p: (root / p).read_bytes() for p in paths}
+
+
+@app.local_entrypoint()
+def samples(seed: int = 0):
+    """One test-split image per demo class -> app/samples/ (for the demo and an end-to-end check)."""
+    import csv
+    import random
+
+    demo = ["Tomato___Early_blight", "Tomato___Late_blight", "Tomato___healthy", "Potato___Late_blight",
+            "Apple___Apple_scab", "Corn_(maize)___Common_rust_", "Grape___Black_rot", "Pepper,_bell___Bacterial_spot"]
+    with open(ROOT / "data" / "splits" / "pv_split.csv") as f:
+        test = [r for r in csv.DictReader(f) if r["split"] == "test"]
+    rng = random.Random(seed)
+    picks = [rng.choice([r for r in test if r["label"] == c])["path"] for c in demo]
+    blobs = read_images.remote(picks)
+    out = ROOT / "app" / "samples"
+    out.mkdir(parents=True, exist_ok=True)
+    lines = ["# Sample leaf images", "",
+             "One image per class from the PlantVillage **test** split (never seen in training).",
+             "Source: PlantVillage via Kaggle abdallahalidev/plantvillage-dataset, CC BY-NC-SA 4.0.", "",
+             "| File | True class |", "| --- | --- |"]
+    for c, p in zip(demo, picks):
+        name = c.split("___")[0].split("_(")[0].split(",")[0].lower() + "_" + c.split("___")[1].strip("_").lower() + ".jpg"
+        (out / name).write_bytes(blobs[p])
+        lines.append(f"| {name} | {c} |")
+    (out / "README.md").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 @app.local_entrypoint()
 def smoke(fraction: float = 0.05):
     commit = _git_commit()
