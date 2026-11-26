@@ -1,0 +1,1707 @@
+{
+ "dataset": {
+  "name": "PlantVillage",
+  "images": 54305,
+  "classes": 38,
+  "crops": 14,
+  "split": {
+   "train": 38788,
+   "val": 7758,
+   "test": 7759
+  },
+  "groups": 53318,
+  "linked_images": 1421,
+  "phash_threshold": 4,
+  "largest_class": {
+   "class": "Orange___Haunglongbing_(Citrus_greening)",
+   "crop": "Orange",
+   "disease": "Haunglongbing (Citrus greening)",
+   "count": 5507
+  },
+  "smallest_class": {
+   "class": "Potato___healthy",
+   "crop": "Potato",
+   "disease": "Healthy",
+   "count": 152
+  },
+  "license": "CC BY-NC-SA 4.0"
+ },
+ "leakage_check": {
+  "grouped": {
+   "accuracy": 0.9961335223611291,
+   "macro_f1": 0.9939993361928933
+  },
+  "random": {
+   "accuracy": 0.9952307295694767,
+   "macro_f1": 0.9935357719161759
+  }
+ },
+ "models": {
+  "custom_cnn": {
+   "display": "Custom CNN",
+   "app_run": "custom_s0",
+   "unsure_threshold": 0.8089,
+   "params_m": 2.36,
+   "gmacs": 2.83,
+   "onnx_mb": 9.5,
+   "latency_ms": {
+    "onnx": 13.6,
+    "torch": 24.2
+   },
+   "test_accuracy": {
+    "mean": 0.9959187180478585,
+    "std": 0.0003243474002349972,
+    "values": [
+     0.9958757571852043,
+     0.9956179920092796,
+     0.9962624049490914
+    ]
+   },
+   "test_macro_f1": {
+    "mean": 0.9934365603093803,
+    "std": 0.00099296727808875,
+    "values": [
+     0.9924421114675596,
+     0.9934395300984401,
+     0.9944280393621415
+    ]
+   },
+   "test_weighted_f1": {
+    "mean": 0.9959099949611451,
+    "std": 0.0003317119922890369,
+    "values": [
+     0.9958616325636858,
+     0.9956051189388443,
+     0.9962632333809054
+    ]
+   },
+   "epochs_run": {
+    "mean": 19.333333333333332,
+    "std": 1.1547005383792515,
+    "values": [
+     20.0,
+     20.0,
+     18.0
+    ]
+   },
+   "train_minutes": {
+    "mean": 12.11,
+    "std": 0.7389857914736928,
+    "values": [
+     12.47,
+     12.6,
+     11.26
+    ]
+   },
+   "seconds_per_epoch": {
+    "mean": 37.166666666666664,
+    "std": 0.20816659994661224,
+    "values": [
+     37.0,
+     37.4,
+     37.1
+    ]
+   },
+   "test_errors": 32,
+   "curves": [
+    {
+     "seed": 0,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "full",
+       "val_macro_f1": 0.52474,
+       "val_acc": 0.66138,
+       "train_acc": 0.49572
+      },
+      {
+       "epoch": 2,
+       "phase": "full",
+       "val_macro_f1": 0.74457,
+       "val_acc": 0.81696,
+       "train_acc": 0.79981
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.872,
+       "val_acc": 0.91712,
+       "train_acc": 0.88433
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.92283,
+       "val_acc": 0.94651,
+       "train_acc": 0.91417
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.91639,
+       "val_acc": 0.9536,
+       "train_acc": 0.93546
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.92362,
+       "val_acc": 0.95347,
+       "train_acc": 0.9456
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.97131,
+       "val_acc": 0.97951,
+       "train_acc": 0.95782
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.96068,
+       "val_acc": 0.96674,
+       "train_acc": 0.96256
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.97801,
+       "val_acc": 0.98402,
+       "train_acc": 0.96808
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.97282,
+       "val_acc": 0.98067,
+       "train_acc": 0.97316
+      },
+      {
+       "epoch": 11,
+       "phase": "full",
+       "val_macro_f1": 0.98402,
+       "val_acc": 0.98737,
+       "train_acc": 0.97914
+      },
+      {
+       "epoch": 12,
+       "phase": "full",
+       "val_macro_f1": 0.98841,
+       "val_acc": 0.99175,
+       "train_acc": 0.98126
+      },
+      {
+       "epoch": 13,
+       "phase": "full",
+       "val_macro_f1": 0.98771,
+       "val_acc": 0.99162,
+       "train_acc": 0.98401
+      },
+      {
+       "epoch": 14,
+       "phase": "full",
+       "val_macro_f1": 0.98218,
+       "val_acc": 0.98814,
+       "train_acc": 0.98621
+      },
+      {
+       "epoch": 15,
+       "phase": "full",
+       "val_macro_f1": 0.99044,
+       "val_acc": 0.9942,
+       "train_acc": 0.98835
+      },
+      {
+       "epoch": 16,
+       "phase": "full",
+       "val_macro_f1": 0.99526,
+       "val_acc": 0.99652,
+       "train_acc": 0.99087
+      },
+      {
+       "epoch": 17,
+       "phase": "full",
+       "val_macro_f1": 0.99564,
+       "val_acc": 0.99691,
+       "train_acc": 0.9918
+      },
+      {
+       "epoch": 18,
+       "phase": "full",
+       "val_macro_f1": 0.99649,
+       "val_acc": 0.99729,
+       "train_acc": 0.99229
+      },
+      {
+       "epoch": 19,
+       "phase": "full",
+       "val_macro_f1": 0.99633,
+       "val_acc": 0.99729,
+       "train_acc": 0.99309
+      },
+      {
+       "epoch": 20,
+       "phase": "full",
+       "val_macro_f1": 0.99683,
+       "val_acc": 0.99768,
+       "train_acc": 0.99304
+      }
+     ]
+    },
+    {
+     "seed": 1,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "full",
+       "val_macro_f1": 0.5899,
+       "val_acc": 0.74336,
+       "train_acc": 0.48492
+      },
+      {
+       "epoch": 2,
+       "phase": "full",
+       "val_macro_f1": 0.71858,
+       "val_acc": 0.80717,
+       "train_acc": 0.79989
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.88866,
+       "val_acc": 0.93143,
+       "train_acc": 0.88771
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.90073,
+       "val_acc": 0.934,
+       "train_acc": 0.91716
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.93302,
+       "val_acc": 0.95244,
+       "train_acc": 0.93425
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.9573,
+       "val_acc": 0.96623,
+       "train_acc": 0.94565
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.95537,
+       "val_acc": 0.96571,
+       "train_acc": 0.95671
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.9653,
+       "val_acc": 0.97615,
+       "train_acc": 0.96401
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.96373,
+       "val_acc": 0.97822,
+       "train_acc": 0.97066
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.98562,
+       "val_acc": 0.98879,
+       "train_acc": 0.97288
+      },
+      {
+       "epoch": 11,
+       "phase": "full",
+       "val_macro_f1": 0.97544,
+       "val_acc": 0.98505,
+       "train_acc": 0.97723
+      },
+      {
+       "epoch": 12,
+       "phase": "full",
+       "val_macro_f1": 0.98727,
+       "val_acc": 0.99046,
+       "train_acc": 0.98159
+      },
+      {
+       "epoch": 13,
+       "phase": "full",
+       "val_macro_f1": 0.99228,
+       "val_acc": 0.99446,
+       "train_acc": 0.98507
+      },
+      {
+       "epoch": 14,
+       "phase": "full",
+       "val_macro_f1": 0.99112,
+       "val_acc": 0.9933,
+       "train_acc": 0.98664
+      },
+      {
+       "epoch": 15,
+       "phase": "full",
+       "val_macro_f1": 0.99383,
+       "val_acc": 0.9951,
+       "train_acc": 0.98958
+      },
+      {
+       "epoch": 16,
+       "phase": "full",
+       "val_macro_f1": 0.99387,
+       "val_acc": 0.99562,
+       "train_acc": 0.99025
+      },
+      {
+       "epoch": 17,
+       "phase": "full",
+       "val_macro_f1": 0.99492,
+       "val_acc": 0.99665,
+       "train_acc": 0.99175
+      },
+      {
+       "epoch": 18,
+       "phase": "full",
+       "val_macro_f1": 0.99586,
+       "val_acc": 0.99678,
+       "train_acc": 0.99208
+      },
+      {
+       "epoch": 19,
+       "phase": "full",
+       "val_macro_f1": 0.99539,
+       "val_acc": 0.99652,
+       "train_acc": 0.99337
+      },
+      {
+       "epoch": 20,
+       "phase": "full",
+       "val_macro_f1": 0.99577,
+       "val_acc": 0.99691,
+       "train_acc": 0.9934
+      }
+     ]
+    },
+    {
+     "seed": 2,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "full",
+       "val_macro_f1": 0.61704,
+       "val_acc": 0.75135,
+       "train_acc": 0.50469
+      },
+      {
+       "epoch": 2,
+       "phase": "full",
+       "val_macro_f1": 0.70305,
+       "val_acc": 0.79647,
+       "train_acc": 0.80513
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.79437,
+       "val_acc": 0.86259,
+       "train_acc": 0.88887
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.9128,
+       "val_acc": 0.94251,
+       "train_acc": 0.92012
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.93569,
+       "val_acc": 0.9487,
+       "train_acc": 0.93551
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.93459,
+       "val_acc": 0.95218,
+       "train_acc": 0.94838
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.95935,
+       "val_acc": 0.96778,
+       "train_acc": 0.95792
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.96851,
+       "val_acc": 0.97486,
+       "train_acc": 0.96377
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.97939,
+       "val_acc": 0.98595,
+       "train_acc": 0.97061
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.9825,
+       "val_acc": 0.98814,
+       "train_acc": 0.97512
+      },
+      {
+       "epoch": 11,
+       "phase": "full",
+       "val_macro_f1": 0.97832,
+       "val_acc": 0.98157,
+       "train_acc": 0.97765
+      },
+      {
+       "epoch": 12,
+       "phase": "full",
+       "val_macro_f1": 0.98995,
+       "val_acc": 0.99317,
+       "train_acc": 0.98092
+      },
+      {
+       "epoch": 13,
+       "phase": "full",
+       "val_macro_f1": 0.99171,
+       "val_acc": 0.99381,
+       "train_acc": 0.98574
+      },
+      {
+       "epoch": 14,
+       "phase": "full",
+       "val_macro_f1": 0.99193,
+       "val_acc": 0.99433,
+       "train_acc": 0.987
+      },
+      {
+       "epoch": 15,
+       "phase": "full",
+       "val_macro_f1": 0.99651,
+       "val_acc": 0.99729,
+       "train_acc": 0.98871
+      },
+      {
+       "epoch": 16,
+       "phase": "full",
+       "val_macro_f1": 0.9955,
+       "val_acc": 0.99652,
+       "train_acc": 0.99139
+      },
+      {
+       "epoch": 17,
+       "phase": "full",
+       "val_macro_f1": 0.99498,
+       "val_acc": 0.99613,
+       "train_acc": 0.99208
+      },
+      {
+       "epoch": 18,
+       "phase": "full",
+       "val_macro_f1": 0.99623,
+       "val_acc": 0.99716,
+       "train_acc": 0.99314
+      }
+     ]
+    }
+   ],
+   "per_class": [
+    {
+     "class": "Apple___Apple_scab",
+     "crop": "Apple",
+     "disease": "Apple scab",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 90
+    },
+    {
+     "class": "Apple___Black_rot",
+     "crop": "Apple",
+     "disease": "Black rot",
+     "precision": 0.9888888888888889,
+     "recall": 1.0,
+     "f1": 0.994413407821229,
+     "support": 89
+    },
+    {
+     "class": "Apple___Cedar_apple_rust",
+     "crop": "Apple",
+     "disease": "Cedar apple rust",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 39
+    },
+    {
+     "class": "Apple___healthy",
+     "crop": "Apple",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 235
+    },
+    {
+     "class": "Blueberry___healthy",
+     "crop": "Blueberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 215
+    },
+    {
+     "class": "Cherry_(including_sour)___Powdery_mildew",
+     "crop": "Cherry",
+     "disease": "Powdery mildew",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 151
+    },
+    {
+     "class": "Cherry_(including_sour)___healthy",
+     "crop": "Cherry",
+     "disease": "Healthy",
+     "precision": 0.9918032786885246,
+     "recall": 0.9918032786885246,
+     "f1": 0.9918032786885246,
+     "support": 122
+    },
+    {
+     "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+     "crop": "Corn (maize)",
+     "disease": "Cercospora leaf spot Gray leaf spot",
+     "precision": 0.9452054794520548,
+     "recall": 0.9324324324324325,
+     "f1": 0.9387755102040817,
+     "support": 74
+    },
+    {
+     "class": "Corn_(maize)___Common_rust_",
+     "crop": "Corn (maize)",
+     "disease": "Common rust",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 171
+    },
+    {
+     "class": "Corn_(maize)___Northern_Leaf_Blight",
+     "crop": "Corn (maize)",
+     "disease": "Northern Leaf Blight",
+     "precision": 0.9647887323943662,
+     "recall": 0.9716312056737588,
+     "f1": 0.9681978798586572,
+     "support": 141
+    },
+    {
+     "class": "Corn_(maize)___healthy",
+     "crop": "Corn (maize)",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 166
+    },
+    {
+     "class": "Grape___Black_rot",
+     "crop": "Grape",
+     "disease": "Black rot",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 168
+    },
+    {
+     "class": "Grape___Esca_(Black_Measles)",
+     "crop": "Grape",
+     "disease": "Esca (Black Measles)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 197
+    },
+    {
+     "class": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+     "crop": "Grape",
+     "disease": "Leaf blight (Isariopsis Leaf Spot)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 154
+    },
+    {
+     "class": "Grape___healthy",
+     "crop": "Grape",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 61
+    },
+    {
+     "class": "Orange___Haunglongbing_(Citrus_greening)",
+     "crop": "Orange",
+     "disease": "Haunglongbing (Citrus greening)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 787
+    },
+    {
+     "class": "Peach___Bacterial_spot",
+     "crop": "Peach",
+     "disease": "Bacterial spot",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 328
+    },
+    {
+     "class": "Peach___healthy",
+     "crop": "Peach",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 52
+    },
+    {
+     "class": "Pepper,_bell___Bacterial_spot",
+     "crop": "Pepper bell",
+     "disease": "Bacterial spot",
+     "precision": 0.993006993006993,
+     "recall": 1.0,
+     "f1": 0.9964912280701754,
+     "support": 142
+    },
+    {
+     "class": "Pepper,_bell___healthy",
+     "crop": "Pepper bell",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 0.985781990521327,
+     "f1": 0.9928400954653938,
+     "support": 211
+    },
+    {
+     "class": "Potato___Early_blight",
+     "crop": "Potato",
+     "disease": "Early blight",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 143
+    },
+    {
+     "class": "Potato___Late_blight",
+     "crop": "Potato",
+     "disease": "Late blight",
+     "precision": 1.0,
+     "recall": 0.986013986013986,
+     "f1": 0.9929577464788732,
+     "support": 143
+    },
+    {
+     "class": "Potato___healthy",
+     "crop": "Potato",
+     "disease": "Healthy",
+     "precision": 0.9473684210526315,
+     "recall": 0.8571428571428571,
+     "f1": 0.9,
+     "support": 21
+    },
+    {
+     "class": "Raspberry___healthy",
+     "crop": "Raspberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 53
+    },
+    {
+     "class": "Soybean___healthy",
+     "crop": "Soybean",
+     "disease": "Healthy",
+     "precision": 0.9918032786885246,
+     "recall": 0.9986244841815681,
+     "f1": 0.9952021932830706,
+     "support": 727
+    },
+    {
+     "class": "Squash___Powdery_mildew",
+     "crop": "Squash",
+     "disease": "Powdery mildew",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 262
+    },
+    {
+     "class": "Strawberry___Leaf_scorch",
+     "crop": "Strawberry",
+     "disease": "Leaf scorch",
+     "precision": 1.0,
+     "recall": 0.9937106918238994,
+     "f1": 0.9968454258675079,
+     "support": 159
+    },
+    {
+     "class": "Strawberry___healthy",
+     "crop": "Strawberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 65
+    },
+    {
+     "class": "Tomato___Bacterial_spot",
+     "crop": "Tomato",
+     "disease": "Bacterial spot",
+     "precision": 0.9967105263157895,
+     "recall": 0.9967105263157895,
+     "f1": 0.9967105263157895,
+     "support": 304
+    },
+    {
+     "class": "Tomato___Early_blight",
+     "crop": "Tomato",
+     "disease": "Early blight",
+     "precision": 0.986013986013986,
+     "recall": 0.986013986013986,
+     "f1": 0.986013986013986,
+     "support": 143
+    },
+    {
+     "class": "Tomato___Late_blight",
+     "crop": "Tomato",
+     "disease": "Late blight",
+     "precision": 0.9890510948905109,
+     "recall": 0.9926739926739927,
+     "f1": 0.9908592321755028,
+     "support": 273
+    },
+    {
+     "class": "Tomato___Leaf_Mold",
+     "crop": "Tomato",
+     "disease": "Leaf Mold",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 136
+    },
+    {
+     "class": "Tomato___Septoria_leaf_spot",
+     "crop": "Tomato",
+     "disease": "Septoria leaf spot",
+     "precision": 1.0,
+     "recall": 0.9920948616600791,
+     "f1": 0.996031746031746,
+     "support": 253
+    },
+    {
+     "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+     "crop": "Tomato",
+     "disease": "Spider mites Two-spotted spider mite",
+     "precision": 0.9916317991631799,
+     "recall": 0.9916317991631799,
+     "f1": 0.9916317991631799,
+     "support": 239
+    },
+    {
+     "class": "Tomato___Target_Spot",
+     "crop": "Tomato",
+     "disease": "Target Spot",
+     "precision": 0.9850746268656716,
+     "recall": 0.99,
+     "f1": 0.9875311720698254,
+     "support": 200
+    },
+    {
+     "class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+     "crop": "Tomato",
+     "disease": "Tomato Yellow Leaf Curl Virus",
+     "precision": 0.9986928104575163,
+     "recall": 0.9986928104575163,
+     "f1": 0.9986928104575163,
+     "support": 765
+    },
+    {
+     "class": "Tomato___Tomato_mosaic_virus",
+     "crop": "Tomato",
+     "disease": "Tomato mosaic virus",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 53
+    },
+    {
+     "class": "Tomato___healthy",
+     "crop": "Tomato",
+     "disease": "Healthy",
+     "precision": 0.9956140350877193,
+     "recall": 1.0,
+     "f1": 0.9978021978021978,
+     "support": 227
+    }
+   ],
+   "top_confusions": [
+    {
+     "true": {
+      "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+      "crop": "Corn (maize)",
+      "disease": "Cercospora leaf spot Gray leaf spot"
+     },
+     "pred": {
+      "class": "Corn_(maize)___Northern_Leaf_Blight",
+      "crop": "Corn (maize)",
+      "disease": "Northern Leaf Blight"
+     },
+     "count": 5
+    },
+    {
+     "true": {
+      "class": "Corn_(maize)___Northern_Leaf_Blight",
+      "crop": "Corn (maize)",
+      "disease": "Northern Leaf Blight"
+     },
+     "pred": {
+      "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+      "crop": "Corn (maize)",
+      "disease": "Cercospora leaf spot Gray leaf spot"
+     },
+     "count": 4
+    },
+    {
+     "true": {
+      "class": "Potato___healthy",
+      "crop": "Potato",
+      "disease": "Healthy"
+     },
+     "pred": {
+      "class": "Soybean___healthy",
+      "crop": "Soybean",
+      "disease": "Healthy"
+     },
+     "count": 3
+    },
+    {
+     "true": {
+      "class": "Tomato___Target_Spot",
+      "crop": "Tomato",
+      "disease": "Target Spot"
+     },
+     "pred": {
+      "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "crop": "Tomato",
+      "disease": "Spider mites Two-spotted spider mite"
+     },
+     "count": 2
+    },
+    {
+     "true": {
+      "class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+      "crop": "Tomato",
+      "disease": "Tomato Yellow Leaf Curl Virus"
+     },
+     "pred": {
+      "class": "Tomato___Late_blight",
+      "crop": "Tomato",
+      "disease": "Late blight"
+     },
+     "count": 1
+    },
+    {
+     "true": {
+      "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "crop": "Tomato",
+      "disease": "Spider mites Two-spotted spider mite"
+     },
+     "pred": {
+      "class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+      "crop": "Tomato",
+      "disease": "Tomato Yellow Leaf Curl Virus"
+     },
+     "count": 1
+    }
+   ],
+   "explain": {
+    "images": 500,
+    "mask_from_segmented": 491,
+    "accuracy_color": 0.996,
+    "accuracy_segmented": 0.7678207739307535,
+    "leaf_fraction": 0.5947040417729592,
+    "random_head_corr": 0.1964491535746869,
+    "gradcam_energy_ratio": 0.7228171241283416,
+    "gradcam_pointing_acc": 0.898,
+    "gradcam++_energy_ratio": 0.7219658072590828,
+    "gradcam++_pointing_acc": 0.89,
+    "test_errors": 33,
+    "test_images": 7759
+   }
+  },
+  "efficientnet_b0": {
+   "display": "EfficientNet-B0",
+   "app_run": "effb0_s2",
+   "unsure_threshold": 0.8018,
+   "params_m": 4.06,
+   "gmacs": 0.4,
+   "onnx_mb": 16.2,
+   "latency_ms": {
+    "onnx": 4.4,
+    "torch": 15.1
+   },
+   "test_accuracy": {
+    "mean": 0.9960046397731667,
+    "std": 0.00012888258796239782,
+    "values": [
+     0.9961335223611291,
+     0.9960046397731667,
+     0.9958757571852043
+    ]
+   },
+   "test_macro_f1": {
+    "mean": 0.9941692890483095,
+    "std": 0.00015681128257437219,
+    "values": [
+     0.9939993361928933,
+     0.9943083653701444,
+     0.9942001655818904
+    ]
+   },
+   "test_weighted_f1": {
+    "mean": 0.9960098008045194,
+    "std": 0.00013019810203407112,
+    "values": [
+     0.9961383346730365,
+     0.9960130677821591,
+     0.9958779999583625
+    ]
+   },
+   "epochs_run": {
+    "mean": 10.0,
+    "std": 0.0,
+    "values": [
+     10.0,
+     10.0,
+     10.0
+    ]
+   },
+   "train_minutes": {
+    "mean": 6.846666666666667,
+    "std": 0.02081665999466138,
+    "values": [
+     6.83,
+     6.87,
+     6.84
+    ]
+   },
+   "seconds_per_epoch": {
+    "mean": 40.1,
+    "std": 0.10000000000000142,
+    "values": [
+     40.1,
+     40.2,
+     40.0
+    ]
+   },
+   "test_errors": 32,
+   "curves": [
+    {
+     "seed": 0,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "head",
+       "val_macro_f1": 0.89844,
+       "val_acc": 0.92936,
+       "train_acc": 0.80672
+      },
+      {
+       "epoch": 2,
+       "phase": "head",
+       "val_macro_f1": 0.92849,
+       "val_acc": 0.94264,
+       "train_acc": 0.89993
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.95838,
+       "val_acc": 0.9679,
+       "train_acc": 0.81371
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.98565,
+       "val_acc": 0.98879,
+       "train_acc": 0.96692
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.98997,
+       "val_acc": 0.99201,
+       "train_acc": 0.98107
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.99309,
+       "val_acc": 0.99484,
+       "train_acc": 0.98778
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.99449,
+       "val_acc": 0.99575,
+       "train_acc": 0.98989
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.99472,
+       "val_acc": 0.99665,
+       "train_acc": 0.991
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.99533,
+       "val_acc": 0.99665,
+       "train_acc": 0.99314
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.99603,
+       "val_acc": 0.99704,
+       "train_acc": 0.99304
+      }
+     ]
+    },
+    {
+     "seed": 1,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "head",
+       "val_macro_f1": 0.90262,
+       "val_acc": 0.92756,
+       "train_acc": 0.80404
+      },
+      {
+       "epoch": 2,
+       "phase": "head",
+       "val_macro_f1": 0.92751,
+       "val_acc": 0.94303,
+       "train_acc": 0.90009
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.95795,
+       "val_acc": 0.96868,
+       "train_acc": 0.81737
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.984,
+       "val_acc": 0.98866,
+       "train_acc": 0.96715
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.99279,
+       "val_acc": 0.99433,
+       "train_acc": 0.98107
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.99255,
+       "val_acc": 0.99472,
+       "train_acc": 0.98716
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.9945,
+       "val_acc": 0.996,
+       "train_acc": 0.99059
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.99568,
+       "val_acc": 0.99704,
+       "train_acc": 0.99159
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.99504,
+       "val_acc": 0.99613,
+       "train_acc": 0.99335
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.99523,
+       "val_acc": 0.99639,
+       "train_acc": 0.99294
+      }
+     ]
+    },
+    {
+     "seed": 2,
+     "points": [
+      {
+       "epoch": 1,
+       "phase": "head",
+       "val_macro_f1": 0.8984,
+       "val_acc": 0.92369,
+       "train_acc": 0.81044
+      },
+      {
+       "epoch": 2,
+       "phase": "head",
+       "val_macro_f1": 0.92386,
+       "val_acc": 0.94096,
+       "train_acc": 0.90058
+      },
+      {
+       "epoch": 3,
+       "phase": "full",
+       "val_macro_f1": 0.95666,
+       "val_acc": 0.96778,
+       "train_acc": 0.81232
+      },
+      {
+       "epoch": 4,
+       "phase": "full",
+       "val_macro_f1": 0.98228,
+       "val_acc": 0.98492,
+       "train_acc": 0.96643
+      },
+      {
+       "epoch": 5,
+       "phase": "full",
+       "val_macro_f1": 0.99195,
+       "val_acc": 0.9933,
+       "train_acc": 0.98128
+      },
+      {
+       "epoch": 6,
+       "phase": "full",
+       "val_macro_f1": 0.99222,
+       "val_acc": 0.99433,
+       "train_acc": 0.98719
+      },
+      {
+       "epoch": 7,
+       "phase": "full",
+       "val_macro_f1": 0.99516,
+       "val_acc": 0.99613,
+       "train_acc": 0.99015
+      },
+      {
+       "epoch": 8,
+       "phase": "full",
+       "val_macro_f1": 0.99601,
+       "val_acc": 0.99704,
+       "train_acc": 0.99136
+      },
+      {
+       "epoch": 9,
+       "phase": "full",
+       "val_macro_f1": 0.99624,
+       "val_acc": 0.99729,
+       "train_acc": 0.9934
+      },
+      {
+       "epoch": 10,
+       "phase": "full",
+       "val_macro_f1": 0.99684,
+       "val_acc": 0.99755,
+       "train_acc": 0.99348
+      }
+     ]
+    }
+   ],
+   "per_class": [
+    {
+     "class": "Apple___Apple_scab",
+     "crop": "Apple",
+     "disease": "Apple scab",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 90
+    },
+    {
+     "class": "Apple___Black_rot",
+     "crop": "Apple",
+     "disease": "Black rot",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 89
+    },
+    {
+     "class": "Apple___Cedar_apple_rust",
+     "crop": "Apple",
+     "disease": "Cedar apple rust",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 39
+    },
+    {
+     "class": "Apple___healthy",
+     "crop": "Apple",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 235
+    },
+    {
+     "class": "Blueberry___healthy",
+     "crop": "Blueberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 215
+    },
+    {
+     "class": "Cherry_(including_sour)___Powdery_mildew",
+     "crop": "Cherry",
+     "disease": "Powdery mildew",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 151
+    },
+    {
+     "class": "Cherry_(including_sour)___healthy",
+     "crop": "Cherry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 122
+    },
+    {
+     "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+     "crop": "Corn (maize)",
+     "disease": "Cercospora leaf spot Gray leaf spot",
+     "precision": 0.9178082191780822,
+     "recall": 0.9054054054054054,
+     "f1": 0.9115646258503401,
+     "support": 74
+    },
+    {
+     "class": "Corn_(maize)___Common_rust_",
+     "crop": "Corn (maize)",
+     "disease": "Common rust",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 171
+    },
+    {
+     "class": "Corn_(maize)___Northern_Leaf_Blight",
+     "crop": "Corn (maize)",
+     "disease": "Northern Leaf Blight",
+     "precision": 0.9507042253521126,
+     "recall": 0.9574468085106383,
+     "f1": 0.9540636042402827,
+     "support": 141
+    },
+    {
+     "class": "Corn_(maize)___healthy",
+     "crop": "Corn (maize)",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 166
+    },
+    {
+     "class": "Grape___Black_rot",
+     "crop": "Grape",
+     "disease": "Black rot",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 168
+    },
+    {
+     "class": "Grape___Esca_(Black_Measles)",
+     "crop": "Grape",
+     "disease": "Esca (Black Measles)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 197
+    },
+    {
+     "class": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+     "crop": "Grape",
+     "disease": "Leaf blight (Isariopsis Leaf Spot)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 154
+    },
+    {
+     "class": "Grape___healthy",
+     "crop": "Grape",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 61
+    },
+    {
+     "class": "Orange___Haunglongbing_(Citrus_greening)",
+     "crop": "Orange",
+     "disease": "Haunglongbing (Citrus greening)",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 787
+    },
+    {
+     "class": "Peach___Bacterial_spot",
+     "crop": "Peach",
+     "disease": "Bacterial spot",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 328
+    },
+    {
+     "class": "Peach___healthy",
+     "crop": "Peach",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 52
+    },
+    {
+     "class": "Pepper,_bell___Bacterial_spot",
+     "crop": "Pepper bell",
+     "disease": "Bacterial spot",
+     "precision": 0.993006993006993,
+     "recall": 1.0,
+     "f1": 0.9964912280701754,
+     "support": 142
+    },
+    {
+     "class": "Pepper,_bell___healthy",
+     "crop": "Pepper bell",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 0.995260663507109,
+     "f1": 0.997624703087886,
+     "support": 211
+    },
+    {
+     "class": "Potato___Early_blight",
+     "crop": "Potato",
+     "disease": "Early blight",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 143
+    },
+    {
+     "class": "Potato___Late_blight",
+     "crop": "Potato",
+     "disease": "Late blight",
+     "precision": 1.0,
+     "recall": 0.993006993006993,
+     "f1": 0.9964912280701754,
+     "support": 143
+    },
+    {
+     "class": "Potato___healthy",
+     "crop": "Potato",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 21
+    },
+    {
+     "class": "Raspberry___healthy",
+     "crop": "Raspberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 53
+    },
+    {
+     "class": "Soybean___healthy",
+     "crop": "Soybean",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 727
+    },
+    {
+     "class": "Squash___Powdery_mildew",
+     "crop": "Squash",
+     "disease": "Powdery mildew",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 262
+    },
+    {
+     "class": "Strawberry___Leaf_scorch",
+     "crop": "Strawberry",
+     "disease": "Leaf scorch",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 159
+    },
+    {
+     "class": "Strawberry___healthy",
+     "crop": "Strawberry",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 65
+    },
+    {
+     "class": "Tomato___Bacterial_spot",
+     "crop": "Tomato",
+     "disease": "Bacterial spot",
+     "precision": 0.9934426229508196,
+     "recall": 0.9967105263157895,
+     "f1": 0.9950738916256158,
+     "support": 304
+    },
+    {
+     "class": "Tomato___Early_blight",
+     "crop": "Tomato",
+     "disease": "Early blight",
+     "precision": 0.9929078014184397,
+     "recall": 0.9790209790209791,
+     "f1": 0.9859154929577465,
+     "support": 143
+    },
+    {
+     "class": "Tomato___Late_blight",
+     "crop": "Tomato",
+     "disease": "Late blight",
+     "precision": 0.974910394265233,
+     "recall": 0.9963369963369964,
+     "f1": 0.9855072463768116,
+     "support": 273
+    },
+    {
+     "class": "Tomato___Leaf_Mold",
+     "crop": "Tomato",
+     "disease": "Leaf Mold",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 136
+    },
+    {
+     "class": "Tomato___Septoria_leaf_spot",
+     "crop": "Tomato",
+     "disease": "Septoria leaf spot",
+     "precision": 1.0,
+     "recall": 0.9802371541501976,
+     "f1": 0.9900199600798403,
+     "support": 253
+    },
+    {
+     "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+     "crop": "Tomato",
+     "disease": "Spider mites Two-spotted spider mite",
+     "precision": 0.9915966386554622,
+     "recall": 0.9874476987447699,
+     "f1": 0.989517819706499,
+     "support": 239
+    },
+    {
+     "class": "Tomato___Target_Spot",
+     "crop": "Tomato",
+     "disease": "Target Spot",
+     "precision": 0.9705882352941176,
+     "recall": 0.99,
+     "f1": 0.9801980198019802,
+     "support": 200
+    },
+    {
+     "class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+     "crop": "Tomato",
+     "disease": "Tomato Yellow Leaf Curl Virus",
+     "precision": 1.0,
+     "recall": 0.9986928104575163,
+     "f1": 0.999345977763244,
+     "support": 765
+    },
+    {
+     "class": "Tomato___Tomato_mosaic_virus",
+     "crop": "Tomato",
+     "disease": "Tomato mosaic virus",
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "support": 53
+    },
+    {
+     "class": "Tomato___healthy",
+     "crop": "Tomato",
+     "disease": "Healthy",
+     "precision": 1.0,
+     "recall": 0.9955947136563876,
+     "f1": 0.9977924944812362,
+     "support": 227
+    }
+   ],
+   "top_confusions": [
+    {
+     "true": {
+      "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+      "crop": "Corn (maize)",
+      "disease": "Cercospora leaf spot Gray leaf spot"
+     },
+     "pred": {
+      "class": "Corn_(maize)___Northern_Leaf_Blight",
+      "crop": "Corn (maize)",
+      "disease": "Northern Leaf Blight"
+     },
+     "count": 7
+    },
+    {
+     "true": {
+      "class": "Corn_(maize)___Northern_Leaf_Blight",
+      "crop": "Corn (maize)",
+      "disease": "Northern Leaf Blight"
+     },
+     "pred": {
+      "class": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+      "crop": "Corn (maize)",
+      "disease": "Cercospora leaf spot Gray leaf spot"
+     },
+     "count": 6
+    },
+    {
+     "true": {
+      "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "crop": "Tomato",
+      "disease": "Spider mites Two-spotted spider mite"
+     },
+     "pred": {
+      "class": "Tomato___Target_Spot",
+      "crop": "Tomato",
+      "disease": "Target Spot"
+     },
+     "count": 3
+    },
+    {
+     "true": {
+      "class": "Tomato___Target_Spot",
+      "crop": "Tomato",
+      "disease": "Target Spot"
+     },
+     "pred": {
+      "class": "Tomato___Spider_mites Two-spotted_spider_mite",
+      "crop": "Tomato",
+      "disease": "Spider mites Two-spotted spider mite"
+     },
+     "count": 2
+    },
+    {
+     "true": {
+      "class": "Tomato___Septoria_leaf_spot",
+      "crop": "Tomato",
+      "disease": "Septoria leaf spot"
+     },
+     "pred": {
+      "class": "Tomato___Late_blight",
+      "crop": "Tomato",
+      "disease": "Late blight"
+     },
+     "count": 2
+    },
+    {
+     "true": {
+      "class": "Tomato___Septoria_leaf_spot",
+      "crop": "Tomato",
+      "disease": "Septoria leaf spot"
+     },
+     "pred": {
+      "class": "Tomato___Bacterial_spot",
+      "crop": "Tomato",
+      "disease": "Bacterial spot"
+     },
+     "count": 2
+    }
+   ],
+   "explain": {
+    "images": 500,
+    "mask_from_segmented": 491,
+    "accuracy_color": 0.994,
+    "accuracy_segmented": 0.8228105906313645,
+    "leaf_fraction": 0.5947040417729592,
+    "random_head_corr": 0.1856762496984124,
+    "gradcam_energy_ratio": 0.6920702593326569,
+    "gradcam_pointing_acc": 0.864,
+    "gradcam++_energy_ratio": 0.7946108479946852,
+    "gradcam++_pointing_acc": 0.822,
+    "test_errors": 32,
+    "test_images": 7759
+   }
+  }
+ },
+ "training": {
+  "gpu": "NVIDIA A10G (Modal)",
+  "seeds": 3,
+  "batch_size": 64,
+  "image_size": 224
+ }
+}

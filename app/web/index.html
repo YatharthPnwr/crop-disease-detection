@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crop Disease Detection</title>
+  <meta name="description" content="Photograph a leaf, get a diagnosis across 38 crop disease classes, and see where the model looked.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,560;1,9..144,400&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 26C6 13 14 6 27 5c-1 13-8 21-21 21z' fill='%232f5d3a'/%3E%3Cpath d='M6 26 20 12' stroke='%23f6f3ec' stroke-width='2'/%3E%3C/svg%3E">
+  <script>
+    // apply the saved theme before first paint to avoid a flash
+    (function () {
+      var q = new URLSearchParams(location.search).get("theme");
+      var t = q === "light" || q === "dark" ? q : localStorage.getItem("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#diagnose">Skip to the diagnosis tool</a>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="wordmark" href="#top" aria-label="Crop Disease Detection, back to top">
+        <svg class="wordmark-leaf" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26C6 13 14 6 27 5c-1 13-8 21-21 21z"/><path class="vein" d="M6 26 20 12"/></svg>
+        <span>Crop Disease Detection</span>
+      </a>
+      <nav aria-label="Sections">
+        <a href="#diagnose">Diagnose</a>
+        <a href="#report">Model report</a>
+        <a href="#method">How it works</a>
+      </nav>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark theme">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ======================================================= HERO + TOOL -->
+    <section class="hero container" id="diagnose" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">PlantVillage · 38 classes · 14 crops</p>
+        <h1 id="hero-title">Read a leaf.<br><em>See why.</em></h1>
+        <p class="lead">Photograph one leaf. A convolutional network names the disease, and a Grad-CAM heatmap shows which part of the leaf drove the answer.</p>
+        <ul class="proof" id="proof" aria-label="Headline results">
+          <li class="skeleton-line"></li><li class="skeleton-line"></li><li class="skeleton-line"></li>
+        </ul>
+        <fieldset class="model-switch" id="model-switch">
+          <legend>Model</legend>
+          <div class="segmented" id="model-options"><span class="skeleton-pill"></span></div>
+        </fieldset>
+      </div>
+
+      <div class="stage card" id="stage" data-state="empty" aria-live="polite">
+        <!-- empty -->
+        <div class="stage-empty" id="dropzone">
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" class="visually-hidden">
+          <svg class="specimen-art" viewBox="0 0 200 200" aria-hidden="true">
+            <rect x="14" y="14" width="172" height="172" rx="10" class="frame"/>
+            <path class="leaf" d="M58 150c-4-52 26-92 92-102-2 62-36 98-92 102z"/>
+            <path class="midrib" d="M58 150 128 74"/>
+            <path class="vein" d="M80 126c10 0 22-4 30-12M92 112c-2-10 0-22 6-30M100 104c12 2 22-2 30-8M106 94c-2-10 2-18 8-24"/>
+          </svg>
+          <p class="stage-title">Drop a leaf photo here</p>
+          <p class="stage-hint">One leaf, filling the frame, in daylight. JPG, PNG or WebP up to 10 MB.</p>
+          <div class="actions">
+            <button class="btn btn-primary" type="button" id="upload-btn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>Upload photo</button>
+            <button class="btn btn-ghost" type="button" id="camera-btn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Use camera</button>
+          </div>
+          <div class="samples">
+            <p class="samples-label" id="samples-label">Or try a leaf the model never saw</p>
+            <div class="sample-row" id="sample-row" role="list" aria-labelledby="samples-label"></div>
+          </div>
+        </div>
+
+        <!-- camera -->
+        <div class="stage-camera">
+          <div class="viewfinder">
+            <video id="video" playsinline muted aria-label="Camera preview"></video>
+            <svg class="guide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M8 22V8h14M78 8h14v14M92 78v14H78M22 92H8V78"/>
+            </svg>
+            <p class="guide-hint">Fit one leaf inside the corners</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" type="button" id="camera-cancel">Cancel</button>
+            <button class="shutter" type="button" id="shutter" aria-label="Take photo"><span></span></button>
+            <button class="btn btn-ghost" type="button" id="camera-flip" aria-label="Switch camera">Flip</button>
+          </div>
+        </div>
+
+        <!-- loading + result share the specimen -->
+        <div class="stage-specimen">
+          <figure class="specimen">
+            <div class="specimen-img">
+              <img id="specimen-photo" alt="Your leaf photo, cropped to what the model sees" width="224" height="224">
+              <img id="specimen-heat" class="heat" alt="" width="224" height="224">
+              <div class="scan" aria-hidden="true"></div>
+            </div>
+            <figcaption class="specimen-tools">
+              <label class="slider-label" for="heat-amount">Heatmap <output id="heat-out">60%</output></label>
+              <input type="range" id="heat-amount" min="0" max="100" value="60">
+              <div class="segmented small" role="radiogroup" aria-label="Heatmap method">
+                <label><input type="radio" name="cam" value="gradcam" checked><span>Grad-CAM</span></label>
+                <label><input type="radio" name="cam" value="gradcam++"><span>Grad-CAM++</span></label>
+              </div>
+            </figcaption>
+          </figure>
+          <p class="stage-status" id="stage-status">Examining the leaf…</p>
+        </div>
+
+        <!-- error -->
+        <div class="stage-error" role="alert">
+          <p class="stage-title" id="error-title">That didn't work</p>
+          <p class="stage-hint" id="error-text"></p>
+          <button class="btn btn-primary" type="button" id="error-retry">Try another photo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= DIAGNOSIS -->
+    <section class="container diagnosis" id="diagnosis" hidden aria-labelledby="dx-title">
+      <div class="dx-main card">
+        <div class="dx-head">
+          <div>
+            <p class="eyebrow" id="dx-crop"></p>
+            <h2 id="dx-title" class="dx-title"></h2>
+          </div>
+          <div class="dx-conf">
+            <span class="num" id="dx-conf"></span>
+            <span class="dx-conf-label">confidence</span>
+          </div>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="dx-meter"></span><i id="dx-tau"></i></div>
+        <div class="notice notice-warn" id="dx-unsure" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17v.5"/></svg>
+          <div><strong>Unsure, please retake the photo.</strong> <span id="dx-unsure-reason"></span> Use one leaf, fill the frame, daylight, plain background.</div>
+        </div>
+        <div class="notice notice-warn" id="dx-noleaf" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17v.5"/></svg>
+          <div><strong>No leaf detected?</strong> Very few green, yellow or brown pixels in this photo.</div>
+        </div>
+        <h3 class="mini-title">Top 3</h3>
+        <ol class="top3" id="dx-top3"></ol>
+        <dl class="dx-meta" id="dx-meta"></dl>
+        <button class="btn btn-ghost" type="button" id="again-btn">Diagnose another leaf</button>
+      </div>
+      <article class="dx-info card" id="dx-info" aria-labelledby="info-title"></article>
+    </section>
+
+    <!-- ======================================================= REPORT -->
+    <section class="report" id="report" aria-labelledby="report-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Model report</p>
+          <h2 id="report-title">How well it works</h2>
+          <p class="lead small">Measured on <span id="r-test-n">—</span> held-out PlantVillage leaves. Every number is the mean of 3 training runs with different seeds.</p>
+        </div>
+
+        <div class="report-error card" id="report-error" hidden role="alert">
+          <p>Couldn't load the model report.</p>
+          <button class="btn btn-ghost" type="button" id="report-retry">Retry</button>
+        </div>
+
+        <div class="kpis" id="kpis">
+          <div class="kpi card skeleton"></div><div class="kpi card skeleton"></div>
+          <div class="kpi card skeleton"></div><div class="kpi card skeleton"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <h3>Validation macro-F1 by epoch</h3>
+              <ul class="legend" aria-label="Legend">
+                <li><i class="sw sw-custom"></i>Custom CNN</li>
+                <li><i class="sw sw-effb0"></i>EfficientNet-B0</li>
+              </ul>
+            </div>
+            <p class="chart-sub">Three seeds per model. EfficientNet-B0 starts from ImageNet weights, so it is already strong after its two head-only epochs.</p>
+            <div class="chart" id="chart-curves" role="img" aria-label="Line chart of validation macro-F1 per epoch for both models"></div>
+            <details class="table-view"><summary>View as table</summary><div id="table-curves"></div></details>
+          </div>
+
+          <div class="card compare">
+            <h3>Head to head</h3>
+            <table class="compare-table" id="compare-table">
+              <thead><tr><th scope="col"><span class="visually-hidden">Metric</span></th>
+                <th scope="col"><i class="sw sw-custom"></i>Custom CNN</th>
+                <th scope="col"><i class="sw sw-effb0"></i>EfficientNet-B0</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <p class="foot">Latency: batch of 1, laptop CPU, 4 threads, ONNX Runtime. Training on an NVIDIA A10G.</p>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="chart-head">
+            <h3>Per-class test F1, hardest classes first</h3>
+            <ul class="legend" aria-label="Legend">
+              <li><i class="dot dot-custom"></i>Custom CNN</li>
+              <li><i class="dot dot-effb0"></i>EfficientNet-B0</li>
+            </ul>
+          </div>
+          <p class="chart-sub">Most classes sit at or near 100%. The two corn leaf-spot diseases, which look alike, are the hardest.</p>
+          <div class="chart" id="chart-classes" role="img" aria-label="Dot plot of per-class test F1 for both models"></div>
+          <div class="chart-foot">
+            <button class="btn btn-ghost small" type="button" id="classes-toggle" aria-expanded="false">Show all 38 classes</button>
+            <details class="table-view"><summary>View as table</summary><div id="table-classes"></div></details>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card explain-card">
+            <h3>Where the models look</h3>
+            <p class="chart-sub">Grad-CAM on 500 test leaves, scored against leaf masks from PlantVillage's segmented images. The leaf covers <span id="x-leaf">—</span> of each image, which is the chance level.</p>
+            <div class="xstats" id="xstats"></div>
+            <figure class="figure">
+              <img src="/figures/cam_effb0_s2_wrong.png" alt="Grad-CAM and Grad-CAM++ heatmaps for eight test leaves EfficientNet-B0 got wrong; most are corn leaf-spot diseases confused with each other" loading="lazy" width="2520" height="1035">
+              <figcaption>EfficientNet-B0's mistakes: most are corn gray leaf spot vs northern leaf blight.</figcaption>
+            </figure>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <h3>Most confused pairs</h3>
+              <p class="chart-sub">EfficientNet-B0 on the test set: <span id="c-errors">—</span>.</p>
+              <ol class="confusions" id="confusions"></ol>
+            </div>
+            <div class="card">
+              <h3>The data</h3>
+              <div class="data-nums" id="data-nums"></div>
+              <div class="splitbar" id="splitbar" aria-hidden="true"></div>
+              <ul class="split-legend" id="split-legend"></ul>
+              <p class="foot" id="leak-note"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= METHOD -->
+    <section class="container method" id="method" aria-labelledby="method-title">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2 id="method-title">From 54,305 lab photos to a heatmap</h2>
+      </div>
+      <ol class="steps">
+        <li class="card"><span class="step-n">01</span><h3>Group near-duplicates</h3><p>PlantVillage has several photos of the same leaf. A perceptual hash links them, and the split keeps each group on one side, so test leaves are truly unseen.</p></li>
+        <li class="card"><span class="step-n">02</span><h3>Train two CNNs</h3><p>A 2.4M-parameter CNN built from scratch, and EfficientNet-B0 fine-tuned from ImageNet in two phases: head first, then the whole network at a 10x lower learning rate.</p></li>
+        <li class="card"><span class="step-n">03</span><h3>Run on Modal GPUs</h3><p>Six runs (two models, three seeds) train in parallel on A10G GPUs with bf16, label smoothing, AdamW, warmup and cosine decay.</p></li>
+        <li class="card"><span class="step-n">04</span><h3>Explain and check</h3><p>Grad-CAM shows the evidence. A confidence threshold set on validation data turns shaky predictions into "please retake".</p></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <p><strong>Limits.</strong> Trained only on lab photos of single leaves on plain backgrounds; field photos will be less accurate. Knows 38 classes across 14 crops. Disease notes are an unverified draft: check with an agricultural extension officer before treating plants.</p>
+        <p class="foot">PlantVillage images: Hughes &amp; Salathé, via Kaggle, CC BY-NC-SA 4.0. Photos you upload stay in memory and are never saved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

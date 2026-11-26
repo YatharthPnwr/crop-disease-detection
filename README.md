@@ -66,7 +66,7 @@ configs/        base.yaml, custom.yaml, effb0.yaml
 src/cropdoc/    data, splits, models, train, evaluate, explain, export, utils
 modal_app.py    download, make_splits, smoke, grid, collect, explain (Modal)
 scripts/        make_splits, dataset_stats, aggregate, make_figures, latency, export_models, fetch_models
-app/            streamlit_app.py, inference.py, models/ (weights come from a release)
+app/            server.py + web/ (main app), inference.py, streamlit_app.py, models/, samples/
 data/           disease_info.json, splits/pv_split.csv
 reports/        results, efficiency, explainability outputs and figures
 tests/          pytest suite (CPU, synthetic data)
@@ -102,13 +102,26 @@ python scripts/aggregate.py && python scripts/make_figures.py && python scripts/
 ```bash
 pip install -r requirements-app.txt       # after the CPU torch install above
 python scripts/fetch_models.py            # trained weights from the models-v1 release
-# no camera? try the images in app/samples/ (unseen test images)
-streamlit run app/streamlit_app.py
+python app/server.py                      # open http://localhost:8000
 ```
 
-The camera works with the laptop webcam on `localhost`. A phone on the same Wi-Fi
-can only use its camera over HTTPS, so either upload a photo taken on the phone or
-start Streamlit with `--server.sslCertFile` / `--server.sslKeyFile`.
+The web app (FastAPI + a hand-built frontend in `app/web/`) has:
+
+- **Diagnose:** upload, drag-and-drop, paste, or a live in-page camera; eight unseen
+  test leaves to try; a specimen view with a Grad-CAM / Grad-CAM++ heatmap you can
+  fade in and out; top-3 predictions, a confidence meter with the "unsure" threshold,
+  and disease notes.
+- **Model report:** test accuracy and macro-F1 (mean ± std over 3 seeds), a
+  head-to-head table, validation curves, per-class F1, the most confused pairs,
+  Grad-CAM leaf-attention scores and dataset statistics. Numbers come from
+  `reports/site_stats.json` (rebuild with `python scripts/build_site_stats.py`).
+- Light and dark themes, keyboard accessible, works on phones.
+- Deep links: `/?sample=tomato_early_blight.jpg` runs a sample, `/?theme=dark` forces a theme.
+- API docs at `/api/docs` (`POST /api/predict`, `GET /api/stats`, `GET /api/models`).
+
+The camera works on `localhost`. A phone on the same Wi-Fi (`python app/server.py --host 0.0.0.0`)
+can only use its camera over HTTPS, so upload a photo there instead.
+The older Streamlit version still runs with `streamlit run app/streamlit_app.py`.
 
 ## Limitations
 
