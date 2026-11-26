@@ -11,8 +11,29 @@ PlantVillage (38 classes, 14 crops) and compared:
 Predictions are explained with Grad-CAM / Grad-CAM++, and a local Streamlit app
 names the disease from a camera or uploaded photo.
 
-- Results: [reports/results.md](reports/results.md) (filled in after training)
 - Full plan: [PLAN.md](PLAN.md)
+
+## Results
+
+PlantVillage test split (7,759 images, grouped by near-duplicates), mean ± std over 3 seeds,
+trained on Modal A10G. Details: [reports/results.md](reports/results.md).
+
+| Model | Test accuracy | Test macro-F1 | Epochs | Train time | CPU latency (ONNX) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Custom CNN | 99.59 ± 0.03 % | 99.34 ± 0.10 % | 19.3 | 12.1 min | 13.6 ms |
+| EfficientNet-B0 | 99.60 ± 0.01 % | 99.42 ± 0.02 % | 10 | 6.9 min | 4.4 ms |
+
+- On lab images both models end up almost equal. Transfer learning shows up as speed:
+  EfficientNet-B0 reaches ~98.5 % val macro-F1 after 4 epochs (custom CNN ~91 %),
+  trains in half the time, varies less across seeds and runs 3x faster on CPU
+  ([curves](reports/figures/val_macro_f1.png), [efficiency](reports/efficiency.md)).
+- The hardest pair is Corn gray leaf spot vs Northern leaf blight
+  ([per-class F1](reports/figures/per_class_f1.png)).
+- Leakage check: a plain random split scored 99.52 % vs 99.61 % grouped (one seed), so no
+  measurable leakage at this threshold; only 2.6 % of images are linked near-duplicates.
+- Grad-CAM puts 69-80 % of its mass on the leaf (chance 59.5 %), but accuracy falls to
+  77-82 % on black-background versions of the same leaves: the models partly use
+  background context ([explainability](reports/explainability.md)).
 
 ## How it works
 
@@ -80,7 +101,8 @@ python scripts/aggregate.py && python scripts/make_figures.py && python scripts/
 
 ```bash
 pip install -r requirements-app.txt       # after the CPU torch install above
-python scripts/fetch_models.py            # trained weights from the GitHub release
+python scripts/fetch_models.py            # trained weights from the models-v1 release
+# no camera? try the images in app/samples/ (unseen test images)
 streamlit run app/streamlit_app.py
 ```
 
