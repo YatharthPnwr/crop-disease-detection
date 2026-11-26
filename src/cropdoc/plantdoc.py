@@ -90,7 +90,8 @@ def crop_boxes(images_dir: str | Path, labels_csv: str | Path, out_dir: str | Pa
                         skipped["unmapped_class"] += 1
                         continue
                     # boxes were drawn on the image at the CSV's width/height; rescale if the file differs
-                    sx, sy = W / float(b["width"] or W), H / float(b["height"] or H)
+                    w0, h0 = float(b["width"] or 0), float(b["height"] or 0)  # some rows list 0
+                    sx, sy = (W / w0 if w0 > 0 else 1.0), (H / h0 if h0 > 0 else 1.0)
                     x0, y0, x1, y1 = (float(b["xmin"]) * sx, float(b["ymin"]) * sy, float(b["xmax"]) * sx, float(b["ymax"]) * sy)
                     if min(x1 - x0, y1 - y0) < min_side:
                         skipped["too_small"] += 1
