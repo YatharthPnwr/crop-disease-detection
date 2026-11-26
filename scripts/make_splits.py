@@ -14,7 +14,7 @@ def main() -> None:
     ap.add_argument("--root", required=True, help="folder with one subfolder per class")
     ap.add_argument("--out", default="data/splits/pv_split.csv")
     ap.add_argument("--pairs", default=None, help="optional CSV of linked near-duplicate pairs")
-    ap.add_argument("--max-dist", type=int, default=6, help="pHash Hamming threshold")
+    ap.add_argument("--max-dist", type=int, default=4, help="pHash Hamming threshold")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--workers", type=int, default=6)
     args = ap.parse_args()

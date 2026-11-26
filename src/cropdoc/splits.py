@@ -2,7 +2,7 @@
 
 PlantVillage holds several photos of the same physical leaf. A random per-image
 split puts siblings in both train and test. We link near-duplicates by
-perceptual hash (pHash, Hamming distance <= max_dist, within each class), merge
+perceptual hash (pHash, Hamming distance <= max_dist, within each class; 4 chosen by inspecting linked pairs), merge
 links into groups with union-find, and split by group with StratifiedGroupKFold
 so a group never spans two splits.
 """
@@ -65,7 +65,7 @@ class _UnionFind:
 
 
 def group_near_duplicates(
-    hashes: np.ndarray, labels: list[str], max_dist: int = 6, chunk: int = 1024
+    hashes: np.ndarray, labels: list[str], max_dist: int = 4, chunk: int = 1024
 ) -> tuple[np.ndarray, list[tuple[int, int, int]]]:
     """Group ids per image, plus the linked pairs (i, j, distance) for inspection."""
     n = len(hashes)
@@ -116,7 +116,7 @@ def check_no_leakage(paths: list[str], groups: np.ndarray, split: np.ndarray) ->
 def make_split(
     root: str | Path,
     out_csv: str | Path,
-    max_dist: int = 6,
+    max_dist: int = 4,
     seed: int = 42,
     workers: int = 8,
     pairs_csv: str | Path | None = None,

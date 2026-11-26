@@ -111,7 +111,7 @@ def download_dataset(slug: str = KAGGLE_SLUG) -> dict:
 
 
 @app.function(image=train_image, volumes={DATA: data_vol}, cpu=8, memory=16384, timeout=3600)
-def build_splits(max_dist: int = 6, seed: int = 42) -> dict:
+def build_splits(max_dist: int = 4, seed: int = 42) -> dict:
     import csv
 
     import numpy as np
@@ -145,6 +145,37 @@ def build_splits(max_dist: int = 6, seed: int = 42) -> dict:
         "pv_split_random.csv": Path(rand_csv).read_bytes(),
         "pv_pairs.csv": Path(pairs_csv).read_bytes(),
     }
+
+
+@app.function(image=train_image, volumes={DATA: data_vol}, cpu=4, memory=8192, timeout=1800)
+def pair_sheet(pairs: list[tuple[str, str, int]], title: str) -> bytes:
+    """Contact sheet of linked near-duplicate pairs (for checking the pHash threshold by eye)."""
+    import io
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from PIL import Image
+
+    root = Path(ensure_local("color"))
+    cols = 6
+    rows = -(-len(pairs) // (cols // 2))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 1.9, rows * 2.1), squeeze=False)
+    for k, (a, b, d) in enumerate(pairs):
+        r, c = divmod(k, cols // 2)
+        for j, p in enumerate((a, b)):
+            ax = axes[r, 2 * c + j]
+            ax.imshow(Image.open(root / p).convert("RGB"))
+            ax.set_title(f"{p.split('/')[0][:18]}\nd={d}" if j == 0 else "", fontsize=6)
+    for ax in axes.ravel():
+        ax.axis("off")
+    fig.suptitle(title, fontsize=10)
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=110)
+    plt.close(fig)
+    return buf.getvalue()
 
 
 @app.function(
@@ -277,7 +308,7 @@ def download():
 
 
 @app.local_entrypoint()
-def make_splits(max_dist: int = 6, seed: int = 42):
+def make_splits(max_dist: int = 4, seed: int = 42):
     res = build_splits.remote(max_dist, seed)
     out = ROOT / "data" / "splits"
     out.mkdir(parents=True, exist_ok=True)
@@ -285,6 +316,22 @@ def make_splits(max_dist: int = 6, seed: int = 42):
         (out / name).write_bytes(res[name])
     (ROOT / "reports" / "split_summary.json").write_text(json.dumps(res["summary"], indent=2))
     print(json.dumps(res["summary"], indent=2))
+
+
+@app.local_entrypoint()
+def inspect_pairs(dist: int = 4, n: int = 15, seed: int = 0):
+    """Random linked pairs at exactly `dist` -> reports/figures/pairs_d<dist>.png."""
+    import csv
+    import random
+
+    with open(ROOT / "data" / "splits" / "pv_pairs.csv") as f:
+        pairs = [(r["path_a"], r["path_b"], int(r["hamming"])) for r in csv.DictReader(f) if int(r["hamming"]) == dist]
+    pick = random.Random(seed).sample(pairs, min(n, len(pairs)))
+    png = pair_sheet.remote(pick, f"Random linked pairs at pHash Hamming distance {dist} ({len(pairs)} such pairs)")
+    out = ROOT / "reports" / "figures" / f"pairs_d{dist}.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(png)
+    print(f"wrote {out}")
 
 
 @app.local_entrypoint()
