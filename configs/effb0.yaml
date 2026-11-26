@@ -8,6 +8,7 @@ phases:
     backbone_lr: 0.0
     freeze_backbone: true
     warmup_epochs: 0
+    schedule: constant
   - name: full            # phase 2: everything trainable, 10x lower LR on the backbone
     epochs: 8
     head_lr: 1.0e-3
