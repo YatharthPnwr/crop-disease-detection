@@ -1,0 +1,10 @@
+# Streamlit app (CPU only). Install torch from the CPU index:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+torch>=2.4
+torchvision>=0.19
+onnxruntime>=1.18
+grad-cam>=1.5
+streamlit>=1.35
+pillow>=10.0
+numpy>=2.0
+opencv-python-headless>=4.9

@@ -1,0 +1,10 @@
+# Custom CNN trained from scratch: one phase, all layers at the same LR.
+model: custom_cnn
+dropout: 0.3
+phases:
+  - name: full
+    epochs: 20
+    head_lr: 1.0e-3
+    backbone_lr: 1.0e-3
+    freeze_backbone: false
+    warmup_epochs: 1

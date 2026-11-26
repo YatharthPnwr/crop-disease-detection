@@ -1,0 +1,20 @@
+# Training / analysis environment (laptop orchestration + Modal image).
+# Install CPU torch locally:  pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+torch>=2.4
+torchvision>=0.19
+grad-cam>=1.5
+imagehash>=4.3
+scikit-learn>=1.4
+pandas>=2.1
+numpy>=2.0
+pillow>=10.0
+pyyaml>=6.0
+tensorboard>=2.15
+fvcore>=0.1.5
+onnx>=1.16
+onnxscript>=0.1
+onnxruntime>=1.18
+matplotlib>=3.8
+seaborn>=0.13
+modal>=1.0
+pytest>=8.0

@@ -1,0 +1,12 @@
+# Shared settings; model configs override these keys.
+data:
+  image_size: 224
+  resize: 256
+  batch_size: 64
+  num_workers: 8
+train:
+  label_smoothing: 0.1
+  weight_decay: 0.01
+  patience: 3          # early stopping on val macro-F1 (applies to the last phase)
+  precision: bf16      # bf16 autocast on Ampere/Ada GPUs; fp32 on CPU
+seeds: [0, 1, 2]

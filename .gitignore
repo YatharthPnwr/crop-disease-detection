@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# Data and training outputs (live on Modal volumes, not in git)
+data/raw/
+data/processed/
+runs/
+*.tar
+
+# Model weights are published as GitHub release assets, not committed
+app/models/*.pt
+app/models/*.onnx
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Secrets
+.env

@@ -1,0 +1,16 @@
+# EfficientNet-B0 (ImageNet) with two-phase fine-tuning.
+model: efficientnet_b0
+dropout: 0.2
+phases:
+  - name: head            # phase 1: backbone frozen (BN in eval mode), train the new head
+    epochs: 2
+    head_lr: 1.0e-3
+    backbone_lr: 0.0
+    freeze_backbone: true
+    warmup_epochs: 0
+  - name: full            # phase 2: everything trainable, 10x lower LR on the backbone
+    epochs: 8
+    head_lr: 1.0e-3
+    backbone_lr: 1.0e-4
+    freeze_backbone: false
+    warmup_epochs: 1
