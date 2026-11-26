@@ -181,7 +181,7 @@ def pair_sheet(pairs: list[tuple[str, str, int]], title: str) -> bytes:
 @app.function(
     image=train_image,
     gpu="A10G",
-    cpu=8,
+    cpu=16,  # PIL augmentation is the bottleneck, not the GPU
     memory=32768,
     timeout=4 * 3600,
     volumes={DATA: data_vol, RUNS: runs_vol},

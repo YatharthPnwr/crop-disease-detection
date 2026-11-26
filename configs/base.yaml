@@ -3,7 +3,7 @@ data:
   image_size: 224
   resize: 256
   batch_size: 64
-  num_workers: 8
+  num_workers: 14
 train:
   label_smoothing: 0.1
   weight_decay: 0.01
