@@ -10,6 +10,7 @@ import csv
 from pathlib import Path
 from typing import Callable, Iterable
 
+import numpy as np
 import torch
 from PIL import Image, ImageOps
 from torch.utils.data import Dataset
@@ -93,8 +94,16 @@ def class_names(rows: Iterable[dict]) -> list[str]:
     return sorted({r["label"] for r in rows})
 
 
+def domain_of(row: dict) -> str:
+    """'plantdoc' (field crops) or 'plantvillage' (lab photos)."""
+    return row.get("domain") or ("plantdoc" if row["path"].startswith("plantdoc/") else "plantvillage")
+
+
 class LeafDataset(Dataset):
-    """Images listed in the split CSV, read relative to `root`."""
+    """Images listed in the split CSV, read relative to `root`.
+
+    `pre(rel_path, img) -> img` runs before the transform (used for background swap).
+    """
 
     def __init__(
         self,
@@ -102,11 +111,14 @@ class LeafDataset(Dataset):
         rows: list[dict],
         classes: list[str],
         transform: Callable,
+        pre: Callable | None = None,
     ):
         self.root = Path(root)
         index = {c: i for i, c in enumerate(classes)}
         self.items = [(r["path"], index[r["label"]]) for r in rows]
+        self.domains = [domain_of(r) for r in rows]
         self.transform = transform
+        self.pre = pre
 
     def __len__(self) -> int:
         return len(self.items)
@@ -114,7 +126,52 @@ class LeafDataset(Dataset):
     def __getitem__(self, i: int):
         rel, label = self.items[i]
         img = load_image(self.root / rel)
+        if self.pre is not None:
+            img = self.pre(rel, img)
         return self.transform(img), label
+
+
+class BackgroundSwap:
+    """Paste a PlantVillage leaf onto a blurred field background (probability p).
+
+    The leaf mask comes from the image's `segmented/` twin. Targets the shortcut found by
+    the Grad-CAM analysis: the models partly relied on PlantVillage's uniform backgrounds.
+    Only applies to lab rows (paths under `color/`).
+    """
+
+    def __init__(self, seg_root: str | Path, bg_dir: str | Path, p: float = 0.3, threshold: int = 25):
+        import re
+
+        self.p, self.threshold = p, threshold
+        norm = lambda n: re.sub(r"_final_masked$", "", Path(n).stem.lower())  # noqa: E731
+        self._norm = norm
+        self.seg = {(f.parent.name, norm(f.name)): f for f in Path(seg_root).glob("*/*")}
+        self.bgs = sorted(Path(bg_dir).glob("*.jpg"))
+        if not self.bgs:
+            raise FileNotFoundError(f"no background images in {bg_dir}")
+
+    def __call__(self, rel: str, img: Image.Image) -> Image.Image:
+        import random
+
+        from PIL import ImageFilter
+
+        if not rel.startswith("color/") or random.random() >= self.p:
+            return img
+        _, cls, name = rel.split("/", 2)
+        seg_path = self.seg.get((cls, self._norm(name)))
+        if seg_path is None:
+            return img
+        seg = load_image(seg_path).resize(img.size)
+        mask = Image.fromarray(((np.asarray(seg).max(axis=-1) > self.threshold) * 255).astype(np.uint8))
+        mask = mask.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.2))  # trim halo, feather edge
+        bg = load_image(random.choice(self.bgs))
+        bw, bh = bg.size
+        side = min(bw, bh)
+        s = int(side * random.uniform(0.5, 1.0))
+        x0, y0 = random.randint(0, bw - s), random.randint(0, bh - s)
+        bg = bg.crop((x0, y0, x0 + s, y0 + s)).resize(img.size)
+        bg = bg.filter(ImageFilter.GaussianBlur(random.uniform(0.5, 4.0)))
+        return Image.composite(img, bg, mask)
 
 
 def split_rows(rows: list[dict], split: str, fraction: float = 1.0, seed: int = 0) -> list[dict]:

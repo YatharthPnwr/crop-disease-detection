@@ -19,8 +19,9 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from .data import LeafDataset, class_names, eval_transform, read_split_csv, split_rows, train_transform
-from .evaluate import autocast, classification_metrics, confusion, predict
+from .data import (BackgroundSwap, LeafDataset, class_names, domain_of, eval_transform, read_split_csv,
+                   split_rows, train_transform)
+from .evaluate import autocast, classification_metrics, confusion, domain_metrics, predict
 from .models import build_model, count_params, freeze_backbone_bn, param_groups, set_backbone_trainable
 from .utils import get_device, git_commit, load_config, load_json, save_json, seed_everything, seed_worker
 
@@ -42,8 +43,11 @@ def lr_lambda(total_steps: int, warmup_steps: int, schedule: str = "cosine"):
 def make_loaders(cfg: dict, data_root, rows, classes, seed: int, fraction: float, device):
     d = cfg["data"]
     size, resize = d["image_size"], d["resize"]
+    pre = None
+    if d.get("bg_swap", 0) > 0:
+        pre = BackgroundSwap(d["seg_root"], d["bg_dir"], p=d["bg_swap"])
     sets = {
-        "train": LeafDataset(data_root, split_rows(rows, "train", fraction, seed), classes, train_transform(size)),
+        "train": LeafDataset(data_root, split_rows(rows, "train", fraction, seed), classes, train_transform(size), pre),
         "val": LeafDataset(data_root, split_rows(rows, "val", fraction, seed), classes, eval_transform(size, resize)),
         "test": LeafDataset(data_root, split_rows(rows, "test", fraction, seed), classes, eval_transform(size, resize)),
     }
@@ -56,8 +60,13 @@ def make_loaders(cfg: dict, data_root, rows, classes, seed: int, fraction: float
     )
     g = torch.Generator().manual_seed(seed)
     bs = d["batch_size"]
+    sampler = None
+    if d.get("domain_weights"):  # oversample the small field domain
+        w = torch.tensor([float(d["domain_weights"].get(dom, 1.0)) for dom in sets["train"].domains], dtype=torch.double)
+        sampler = torch.utils.data.WeightedRandomSampler(w, num_samples=len(w), replacement=True, generator=g)
     return {
-        "train": DataLoader(sets["train"], batch_size=bs, shuffle=True, drop_last=len(sets["train"]) > bs, generator=g, **common),
+        "train": DataLoader(sets["train"], batch_size=bs, shuffle=sampler is None, sampler=sampler,
+                            drop_last=len(sets["train"]) > bs, generator=g if sampler is None else None, **common),
         "val": DataLoader(sets["val"], batch_size=bs * 2, shuffle=False, **common),
         "test": DataLoader(sets["test"], batch_size=bs * 2, shuffle=False, **common),
     }
@@ -112,6 +121,8 @@ def run(
 
     rows = read_split_csv(split_csv)
     classes = class_names(rows)
+    field_idx = sorted({classes.index(r["label"]) for r in rows if domain_of(r) == "plantdoc"}) or None
+    select_domains = cfg["train"].get("select_metric") == "domain_mean_f1"
     loaders = make_loaders(cfg, data_root, rows, classes, seed, fraction, device)
     print(f"[{out.name}] device={device} train={len(loaders['train'].dataset)} "
           f"val={len(loaders['val'].dataset)} test={len(loaders['test'].dataset)}", flush=True)
@@ -162,8 +173,12 @@ def run(
             tr_loss, tr_acc = train_one_epoch(
                 model, loaders["train"], criterion, opt, sched, scaler, device, precision, freeze
             )
-            yv, pv, _, val_loss = predict(model, loaders["val"], device, precision, criterion)
+            yv, pv, vprobs, val_loss = predict(model, loaders["val"], device, precision, criterion)
             vm = classification_metrics(yv, pv, classes)
+            dm = domain_metrics(yv, vprobs, loaders["val"].dataset.domains, field_idx)
+            score = vm["macro_f1"]
+            if select_domains and len(dm) > 1:  # equal weight to lab and field validation
+                score = float(np.mean([v["macro_f1"] for v in dm.values()]))
             rec = {
                 "phase": ph["name"],
                 "epoch": ep,
@@ -173,6 +188,8 @@ def run(
                 "val_loss": round(val_loss, 5),
                 "val_acc": round(vm["accuracy"], 5),
                 "val_macro_f1": round(vm["macro_f1"], 5),
+                **({f"val_f1_{k}": round(v["macro_f1"], 5) for k, v in dm.items()} if len(dm) > 1 else {}),
+                "val_select": round(score, 5),
                 "head_lr": opt.param_groups[-1]["lr"],
                 "seconds": round(time.time() - t0, 1),
             }
@@ -182,9 +199,9 @@ def run(
                 for k in ("train_loss", "train_acc", "val_loss", "val_acc", "val_macro_f1", "head_lr"):
                     writer.add_scalar(k, rec[k], global_epoch)
 
-            improved = vm["macro_f1"] > best_f1
+            improved = score > best_f1
             if improved:
-                best_f1 = vm["macro_f1"]
+                best_f1 = score
                 torch.save(
                     {"model": _cpu_state(model), "cfg": cfg, "classes": classes, "seed": seed, "val": rec},
                     out / "best.pt",
@@ -209,8 +226,14 @@ def run(
     # ---- test the best checkpoint
     best = torch.load(out / "best.pt", map_location="cpu", weights_only=False)
     model.load_state_dict(best["model"])
-    yt, pt, _, test_loss = predict(model, loaders["test"], device, precision, criterion)
+    yt, pt, tprobs, test_loss = predict(model, loaders["test"], device, precision, criterion)
     tm = classification_metrics(yt, pt, classes)
+    test_domains = domain_metrics(yt, tprobs, loaders["test"].dataset.domains, field_idx)
+    tdom = np.array(loaders["test"].dataset.domains)
+    for dname in set(tdom.tolist()) if len(set(tdom.tolist())) > 1 else []:
+        sel = tdom == dname
+        save_json(classification_metrics(yt[sel], pt[sel], classes)["per_class"], out / f"test_per_class_{dname}.json")
+        np.save(out / f"confusion_{dname}.npy", confusion(yt[sel], pt[sel], len(classes)))
     np.save(out / "confusion.npy", confusion(yt, pt, len(classes)))
 
     # App "unsure" threshold from validation (never test): the top-1 confidence that
@@ -234,6 +257,7 @@ def run(
         "device": torch.cuda.get_device_name(0) if device.type == "cuda" else "cpu",
         "best_epoch": best["val"],
         "test": {k: v for k, v in tm.items() if k != "per_class"} | {"loss": test_loss},
+        "test_domains": test_domains,
         "unsure_threshold": round(unsure_threshold, 4),
         "epochs_run": len(history),
         "mean_epoch_seconds": round(float(np.mean(epoch_secs)), 1) if epoch_secs else None,

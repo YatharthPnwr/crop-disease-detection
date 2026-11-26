@@ -61,3 +61,29 @@ def classification_metrics(y_true: np.ndarray, y_pred: np.ndarray, classes: list
 
 def confusion(y_true: np.ndarray, y_pred: np.ndarray, num_classes: int) -> np.ndarray:
     return confusion_matrix(y_true, y_pred, labels=list(range(num_classes)))
+
+
+def domain_metrics(y_true: np.ndarray, probs: np.ndarray, domains, field_classes=None) -> dict:
+    """Accuracy and macro-F1 per domain. Macro-F1 averages only the classes present in that
+    domain's labels. For PlantDoc we also report a masked score: argmax restricted to the
+    classes PlantDoc has (the like-for-like lab-vs-field comparison)."""
+    domains = np.asarray(domains)
+    out = {}
+    for d in sorted(set(domains.tolist())):
+        idx = domains == d
+        yt, pr = y_true[idx], probs[idx]
+        pred = pr.argmax(1)
+        present = sorted(set(yt.tolist()))
+        m = {
+            "n": int(idx.sum()),
+            "accuracy": float(accuracy_score(yt, pred)),
+            "macro_f1": float(f1_score(yt, pred, labels=present, average="macro", zero_division=0)),
+        }
+        if d == "plantdoc" and field_classes:
+            masked = np.full_like(pr, -np.inf)
+            masked[:, field_classes] = pr[:, field_classes]
+            mp = masked.argmax(1)
+            m["accuracy_masked"] = float(accuracy_score(yt, mp))
+            m["macro_f1_masked"] = float(f1_score(yt, mp, labels=present, average="macro", zero_division=0))
+        out[d] = m
+    return out

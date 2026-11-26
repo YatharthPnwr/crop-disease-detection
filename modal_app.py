@@ -147,6 +147,98 @@ def build_splits(max_dist: int = 4, seed: int = 42) -> dict:
     }
 
 
+PLANTDOC_ZIP = "https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset/archive/refs/heads/master.zip"
+
+
+@app.function(image=train_image, volumes={DATA: data_vol}, cpu=8, memory=16384, timeout=3600)
+def build_field_data(max_dist: int = 4, seed: int = 42, n_backgrounds: int = 600) -> dict:
+    """PlantDoc leaf crops + field backgrounds into the volume, and the combined lab+field split."""
+    import random
+    import tarfile
+    import urllib.request
+    import zipfile
+
+    from PIL import Image
+
+    from cropdoc.data import read_split_csv
+    from cropdoc.plantdoc import build_plantdoc, write_combined_split
+
+    zpath, raw = Path("/tmp/plantdoc.zip"), Path("/tmp/pdraw")
+    urllib.request.urlretrieve(PLANTDOC_ZIP, zpath)
+    with zipfile.ZipFile(zpath) as zf:
+        zf.extractall(raw)
+    det = next(p for p in raw.iterdir() if p.is_dir())
+    color = ensure_local("color")
+    pv_rows = read_split_csv(f"{DATA}/pv_split.csv")
+    crops = Path(LOCAL_PV) / "plantdoc"
+    rows, summary = build_plantdoc(det, crops, color, pv_rows, max_dist, seed, workers=8)
+
+    # field backgrounds for background swap: PlantDoc TRAIN photos only (never test)
+    bg = Path(LOCAL_PV) / "backgrounds"
+    bg.mkdir(parents=True, exist_ok=True)
+    train_imgs = sorted(p for p in (det / "TRAIN").iterdir() if p.suffix.lower() in (".jpg", ".jpeg", ".png"))
+    for i, src in enumerate(random.Random(seed).sample(train_imgs, min(n_backgrounds, len(train_imgs)))):
+        try:
+            with Image.open(src) as im:
+                im = im.convert("RGB")
+                im.thumbnail((480, 480))
+                im.save(bg / f"bg{i:04d}.jpg", quality=88)
+        except OSError:
+            continue
+    for kind in ("plantdoc", "backgrounds"):
+        with tarfile.open(f"{DATA}/pv_{kind}.tar", "w") as tar:
+            tar.add(Path(LOCAL_PV) / kind, arcname=kind)
+
+    pd_csv, comb_csv = f"{DATA}/pd_split.csv", f"{DATA}/combined_split.csv"
+    with open(pd_csv, "w", newline="") as f:
+        import csv
+
+        w = csv.DictWriter(f, fieldnames=["path", "label", "group", "split", "source_split", "source_image"])
+        w.writeheader()
+        w.writerows(rows)
+    write_combined_split(pv_rows, rows, comb_csv)
+    data_vol.commit()
+    summary["backgrounds"] = len(list(bg.glob("*.jpg")))
+    return {"summary": summary, "pd_split.csv": Path(pd_csv).read_bytes()}
+
+
+@app.function(image=train_image, gpu="A10G", cpu=8, memory=32768, timeout=3600,
+              volumes={DATA: data_vol, RUNS: runs_vol})
+def evaluate_runs(run_ids: list[str], split_name: str = "combined_split.csv") -> dict:
+    """Lab and field test metrics for existing checkpoints (e.g. the lab-only baseline)."""
+    import numpy as np
+    import torch
+    from torch.utils.data import DataLoader
+
+    from cropdoc.data import LeafDataset, domain_of, eval_transform, read_split_csv, split_rows
+    from cropdoc.evaluate import classification_metrics, domain_metrics, predict
+    from cropdoc.models import build_model
+
+    runs_vol.reload()
+    ensure_local("color")
+    ensure_local("plantdoc")
+    rows = read_split_csv(f"{DATA}/{split_name}")
+    test = split_rows(rows, "test")
+    out = {}
+    for rid in run_ids:
+        ck = torch.load(f"{RUNS}/{rid}/best.pt", map_location="cpu", weights_only=False)
+        classes = ck["classes"]
+        model = build_model(ck["cfg"]["model"], len(classes), ck["cfg"]["dropout"], pretrained=False)
+        model.load_state_dict(ck["model"])
+        model = model.cuda().eval().to(memory_format=torch.channels_last)
+        ds = LeafDataset(LOCAL_PV, test, classes, eval_transform())
+        y, p, probs, _ = predict(model, DataLoader(ds, batch_size=256, num_workers=8), torch.device("cuda"), "bf16")
+        field_idx = sorted({classes.index(r["label"]) for r in rows if domain_of(r) == "plantdoc"})
+        dom = np.array(ds.domains)
+        pd_sel = dom == "plantdoc"
+        out[rid] = {
+            "test_domains": domain_metrics(y, probs, ds.domains, field_idx),
+            "per_class_plantdoc": classification_metrics(y[pd_sel], p[pd_sel], classes)["per_class"],
+        }
+        print(rid, json.dumps(out[rid]["test_domains"]), flush=True)
+    return out
+
+
 @app.function(image=train_image, volumes={DATA: data_vol}, cpu=4, memory=8192, timeout=1800)
 def pair_sheet(pairs: list[tuple[str, str, int]], title: str) -> bytes:
     """Contact sheet of linked near-duplicate pairs (for checking the pHash threshold by eye)."""
@@ -192,7 +284,16 @@ def train(cfg: dict, seed: int, run_id: str, fraction: float = 1.0, max_epochs: 
     os.environ["CROPDOC_GIT_COMMIT"] = commit
     from cropdoc.train import run
 
-    root = ensure_local("color")
+    split_name = cfg.get("split", split_name)
+    if split_name.startswith("combined"):  # lab + field: paths are color/... and plantdoc/...
+        ensure_local("color")
+        ensure_local("plantdoc")
+        root = LOCAL_PV
+        if cfg["data"].get("bg_swap", 0) > 0:
+            cfg["data"]["seg_root"] = ensure_local("segmented")
+            cfg["data"]["bg_dir"] = ensure_local("backgrounds")
+    else:
+        root = ensure_local("color")
     try:
         runs_vol.reload()  # pick up last.pt from a pre-empted attempt
     except Exception as e:  # reload can fail in a reused container with open files
@@ -268,7 +369,8 @@ def collect_runs(weights_for: list[str]) -> dict:
     out = {}
     for d in sorted(p for p in Path(RUNS).iterdir() if p.is_dir()):
         files = {}
-        for name in ("metrics.json", "test_per_class.json", "classes.json", "confusion.npy"):
+        for name in ("metrics.json", "test_per_class.json", "classes.json", "confusion.npy",
+                     "test_per_class_plantdoc.json", "test_per_class_plantvillage.json", "confusion_plantdoc.npy"):
             if (d / name).exists():
                 files[name] = (d / name).read_bytes()
         if d.name in weights_for and (d / "best.pt").exists():
@@ -392,6 +494,40 @@ def grid(seeds: str = "0,1,2", leakage: bool = True):
 
 
 @app.local_entrypoint()
+def field_data():
+    """PlantDoc crops + backgrounds -> volume; writes data/splits/pd_split.csv and reports/plantdoc_summary.json."""
+    res = build_field_data.remote()
+    (ROOT / "data" / "splits" / "pd_split.csv").write_bytes(res["pd_split.csv"])
+    (ROOT / "reports" / "plantdoc_summary.json").write_text(json.dumps(res["summary"], indent=2))
+    print(json.dumps({k: v for k, v in res["summary"].items() if k != "per_class"}, indent=2))
+
+
+@app.local_entrypoint()
+def field_baseline(runs: str = "custom_s0,custom_s1,custom_s2,effb0_s0,effb0_s1,effb0_s2"):
+    """Lab-only models scored on the lab and field test sets -> reports/field_baseline.json."""
+    res = evaluate_runs.remote([r for r in runs.split(",") if r])
+    (ROOT / "reports" / "field_baseline.json").write_text(json.dumps(res, indent=2))
+
+
+@app.local_entrypoint()
+def grid_field(seeds: str = "0,1,2", ablation: bool = True):
+    """Lab + field training: custom CNN and EfficientNet-B0 x seeds (+ EfficientNet-B0 without background swap)."""
+    commit = _git_commit()
+    jobs = []
+    for c in ("custom_field", "effb0_field"):
+        cfg = _cfg(c)
+        for s in (int(x) for x in seeds.split(",")):
+            jobs.append({"cfg": cfg, "seed": s, "run_id": f"{c}_s{s}", "commit": commit, "split": cfg["split"]})
+    if ablation:
+        cfg = _cfg("effb0_field_nobg")
+        jobs.append({"cfg": cfg, "seed": 0, "run_id": "effb0_field_nobg_s0", "commit": commit, "split": cfg["split"]})
+    print(f"launching {len(jobs)} runs: {[j['run_id'] for j in jobs]}")
+    for r in run_grid.remote(jobs):
+        res = r["result"]
+        print(r["run_id"], "ok" if r["ok"] else "FAILED", json.dumps(res.get("test_domains")) if r["ok"] else res)
+
+
+@app.local_entrypoint()
 def explain(runs: str = "custom_s0,effb0_s0", n: int = 500):
     """Grad-CAM analysis -> reports/explain_<run>.json and reports/figures/cam_<run>_*.png."""
     res = explain_runs.remote([r for r in runs.split(",") if r], n)
@@ -407,15 +543,18 @@ def explain(runs: str = "custom_s0,effb0_s0", n: int = 500):
 
 
 @app.local_entrypoint()
-def collect():
-    """Metrics for every run -> runs/<id>/; best-val seed of each model -> app/models/<model>.pt."""
+def collect(family: str = "field"):
+    """Metrics for every run -> runs/<id>/; best-val seed of each model in `family`
+    ("lab": PlantVillage-only runs, "field": lab + field runs) -> app/models/<model>.pt."""
     meta = collect_runs.remote([])
     best: dict[str, tuple[float, str]] = {}
     for run_id, files in meta.items():
-        if "metrics.json" not in files or run_id.startswith("smoke") or "random" in run_id:
+        if "metrics.json" not in files or run_id.startswith("smoke") or "random" in run_id or "nobg" in run_id:
+            continue
+        if ("_field_" in run_id) != (family == "field"):
             continue
         m = json.loads(files["metrics.json"])
-        f1 = m["best_epoch"]["val_macro_f1"]
+        f1 = m["best_epoch"].get("val_select", m["best_epoch"]["val_macro_f1"])
         if f1 > best.get(m["model"], (-1.0, ""))[0]:
             best[m["model"]] = (f1, run_id)
     weights = collect_runs.remote([rid for _, rid in best.values()])

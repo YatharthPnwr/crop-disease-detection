@@ -1,0 +1,19 @@
+# custom_field: same model and schedule as custom.yaml, trained on lab + field images.
+# Custom CNN trained from scratch: one phase, all layers at the same LR.
+model: custom_cnn
+dropout: 0.3
+phases:
+  - name: full
+    epochs: 20
+    head_lr: 1.0e-3
+    backbone_lr: 1.0e-3
+    freeze_backbone: false
+    warmup_epochs: 1
+
+# Lab + field training: PlantVillage plus PlantDoc leaf crops (configs/*_field.yaml)
+split: combined_split.csv
+data:
+  domain_weights: {plantvillage: 1.0, plantdoc: 2.0}   # oversample the small field set
+  bg_swap: 0.3                                         # paste lab leaves onto field backgrounds
+train:
+  select_metric: domain_mean_f1   # checkpoint = best mean of lab and field val macro-F1
