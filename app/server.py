@@ -36,6 +36,15 @@ DISPLAY = 2 * IMAGE_SIZE  # 448 px specimen image
 app = FastAPI(title="Crop Disease Detection", docs_url="/api/docs", redoc_url=None)
 
 
+@app.middleware("http")
+async def no_stale_frontend(request, call_next):
+    """Make browsers revalidate the page and its JS/CSS, so an edit never mixes old and new files."""
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 @lru_cache(maxsize=4)
 def get_model(name: str) -> I.LoadedModel:
     if name not in I.available_models():
