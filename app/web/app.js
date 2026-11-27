@@ -290,10 +290,6 @@ function renderStats(s) {
   const ds = s.dataset, fd = s.field_dataset;
   const labOnlyE = e.families.lab;
 
-  $("#proof").innerHTML = `
-    <li><span class="num">${pm(fe.lab_accuracy)}</span><span class="lbl">on lab photos</span></li>
-    <li><span class="num">${pm(fe.field_accuracy)}</span><span class="lbl">on field photos</span></li>
-    <li><span class="num">${e.latency_ms.onnx} ms</span><span class="lbl">per leaf on a laptop CPU</span></li>`;
   $("#r-test-n").textContent = int(ds.split.test);
   $("#r-field-n").textContent = fd ? int(fd.split.test) : "–";
 
